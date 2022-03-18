@@ -2,6 +2,7 @@
 
 namespace GetCandy\Stripe;
 
+use GetCandy\Base\DataTransferObjects\PaymentCapture;
 use GetCandy\Base\DataTransferObjects\PaymentRefund;
 use GetCandy\Base\DataTransferObjects\PaymentRelease;
 use GetCandy\Models\Transaction;
@@ -27,11 +28,28 @@ class StripePaymentType extends AbstractPayment
      */
     protected PaymentIntent $paymentIntent;
 
+    /**
+     * The policy when capturing payments.
+     *
+     * @var string
+     */
+    protected $policy;
+
+    /**
+     * Initialise the payment type.
+     */
     public function __construct()
     {
         $this->stripe = new StripeClient(config('services.stripe.key'));
+
+        $this->policy = config('stripe.policy', 'automatic');
     }
 
+    /**
+     * Release the payment for processing.
+     *
+     * @return \GetCandy\Base\DataTransferObjects\PaymentRelease
+     */
     public function release(): PaymentRelease
     {
         if (!$this->order) {
@@ -49,19 +67,80 @@ class StripePaymentType extends AbstractPayment
             $this->data['payment_intent']
         );
 
-        if ($this->paymentIntent->status == 'requires_capture') {
+        if ($this->paymentIntent->status == 'requires_capture' && $this->policy == 'automatic') {
             $this->paymentIntent = $this->stripe->paymentIntents->capture(
                 $this->data['payment_intent']
             );
         }
 
-        if (in_array($this->paymentIntent->status, ['success', 'processing'])) {
+        if (in_array($this->paymentIntent->status, ['success', 'processing', 'required_capture'])) {
             return $this->releaseFailed();
         }
 
         return $this->releaseSuccess();
     }
 
+    /**
+     * Capture a payment for a transaction.
+     *
+     * @param \GetCandy\Models\Transaction $transaction
+     * @param integer $amount
+     * @return \GetCandy\Base\DataTransferObjects\PaymentCapture
+     */
+    public function capture(Transaction $transaction, $amount = 0): PaymentCapture
+    {
+        $payload = [];
+
+        if ($amount > 0) {
+            $payload['amount_to_capture'] = $amount;
+        }
+
+        try {
+            $response = $this->stripe->paymentIntents->capture(
+                $transaction->reference,
+                $payload
+            );
+        } catch (InvalidRequestException $e) {
+            return new PaymentCapture(
+                success: false,
+                message: $e->getMessage()
+            );
+        }
+
+        $charges = $response->charges->data;
+
+        $transactions = [];
+
+        foreach ($charges as $charge) {
+            $card = $charge->payment_method_details->card;
+            $transactions[] = [
+                'parent_transaction_id' => $transaction->id,
+                'success' => $charge->status != 'failed',
+                'type' => 'capture',
+                'driver' => 'stripe',
+                'amount' => $charge->amount_captured,
+                'reference' => $response->id,
+                'status' => $charge->status,
+                'notes' => $charge->failure_message,
+                'card_type' => $card->brand,
+                'last_four' => $card->last4,
+                'captured_at' => $charge->amount_captured ? now() : null,
+            ];
+        }
+
+        $transaction->order->transactions()->createMany($transactions);
+
+        return new PaymentCapture(success: true);
+    }
+
+    /**
+     * Refund a captured transaction
+     *
+     * @param \GetCandy\Models\Transaction $transaction
+     * @param integer $amount
+     * @param string|null $notes
+     * @return \GetCandy\Base\DataTransferObjects\PaymentRefund
+     */
     public function refund(Transaction $transaction, int $amount = 0, $notes = null): PaymentRefund
     {
         try {
@@ -77,7 +156,7 @@ class StripePaymentType extends AbstractPayment
 
         $transaction->order->transactions()->create([
             'success' => $refund->status != 'failed',
-            'refund' => true,
+            'type' => 'refund',
             'driver' => 'stripe',
             'amount' => $refund->amount,
             'reference' => $refund->payment_intent,
@@ -115,19 +194,25 @@ class StripePaymentType extends AbstractPayment
 
             $transactions = [];
 
+            $type = 'capture';
+
+            if ($this->policy == 'manual') {
+                $type = 'intent';
+            }
+
             foreach ($charges as $charge) {
                 $card = $charge->payment_method_details->card;
-
                 $transactions[] = [
                     'success' => $charge->status != 'failed',
-                    'refund' => !!$charge->amount_refunded,
+                    'type' => $charge->amount_refunded ? 'refund' : $type,
                     'driver' => 'stripe',
-                    'amount' => $charge->amount_captured ?: $charge->amount_refunded,
+                    'amount' => $charge->amount,
                     'reference' => $this->paymentIntent->id,
                     'status' => $charge->status,
                     'notes' => $charge->failure_message,
                     'card_type' => $card->brand,
                     'last_four' => $card->last4,
+                    'captured_at' => $charge->amount_captured ? now() : null,
                     'meta' => [
                         'address_line1_check' => $card->checks->address_line1_check,
                         'address_postal_code_check' => $card->checks->address_postal_code_check,

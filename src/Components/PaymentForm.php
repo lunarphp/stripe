@@ -3,6 +3,7 @@
 namespace GetCandy\Stripe\Components;
 
 use GetCandy\Models\Cart;
+use GetCandy\Stripe\Facades\StripeFacade;
 use Livewire\Component;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
@@ -16,7 +17,26 @@ class PaymentForm extends Component
      */
     public Cart $cart;
 
+    /**
+     * The return URL on a successful transaction
+     *
+     * @var string
+     */
     public $returnUrl;
+
+    /**
+     * The policy for handling payments.
+     *
+     * @var string
+     */
+    public $policy;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $listeners = [
+        'cardDetailsSubmitted',
+    ];
 
     /**
      * {@inheritDoc}
@@ -24,30 +44,28 @@ class PaymentForm extends Component
     public function mount()
     {
         Stripe::setApiKey(config('services.stripe.key'));
+        $this->policy = config('stripe.policy', 'capture');
     }
 
+    /**
+     * Return the client secret for Payment Intent
+     *
+     * @return void
+     */
     public function getClientSecretProperty()
     {
-        $shipping = $this->cart->shippingAddress;
-
-        $intent = PaymentIntent::create([
-            'amount' => $this->cart->total->value,
-            'currency' => $this->cart->currency->code,
-            'payment_method_types' => ['card'],
-            'shipping' => [
-                'name' => "{$shipping->first_name} {$shipping->last_name}",
-                'address' => [
-                    'city' => $shipping->city,
-                    'country' => $shipping->country->iso2,
-                    'line1' => $shipping->line_one,
-                    'line2' => $shipping->line_two,
-                    'postal_code' => $shipping->postcode,
-                    'state' => $shipping->state,
-                ],
-            ],
-        ]);
-
+        $intent = StripeFacade::createIntent($this->cart);
         return $intent->client_secret;
+    }
+
+    /**
+     * Return the carts billing address.
+     *
+     * @return void
+     */
+    public function getBillingProperty()
+    {
+        return $this->cart->billingAddress;
     }
 
     /**
@@ -55,6 +73,6 @@ class PaymentForm extends Component
      */
     public function render()
     {
-        return view('gcstripe::components.payment-form');
+        return view("gcstripe::components.payment-form");
     }
 }
