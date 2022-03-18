@@ -48,7 +48,7 @@ class StripeManager
             'amount' => $cart->total->value,
             'currency' => $cart->currency->code,
             'payment_method_types' => ['card'],
-            'capture_method' => config('stripe.policy', 'automatic'),
+            'capture_method' => config('getcandy.stripe.policy', 'automatic'),
             'shipping' => [
                 'name' => "{$shipping->first_name} {$shipping->last_name}",
                 'address' => [

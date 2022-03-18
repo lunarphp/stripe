@@ -33,9 +33,17 @@ class StripePaymentsServiceProvider extends ServiceProvider
             EOT;
         });
 
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'gcstripe');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'getcandy');
 
-        $this->mergeConfigFrom(__DIR__."/../config/stripe.php", "stripe");
+        $this->mergeConfigFrom(__DIR__."/../config/stripe.php", "getcandy.stripe");
+
+        $this->publishes([
+            __DIR__."/../config/stripe.php" => config_path("getcandy/stripe.php"),
+        ], 'getcandy.stripe.config');
+
+        $this->publishes([
+            __DIR__.'/../resources/views' => resource_path('views/vendor/getcandy'),
+        ], 'getcandy.stripe.components');
 
         // Register the stripe payment component.
         Livewire::component('stripe.payment', PaymentForm::class);

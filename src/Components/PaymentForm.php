@@ -73,6 +73,6 @@ class PaymentForm extends Component
      */
     public function render()
     {
-        return view("gcstripe::components.payment-form");
+        return view("getcandy::stripe.components.payment-form");
     }
 }

@@ -13,5 +13,5 @@ return [
     | manual - Don't take payment straight away and capture later.
     |
     */
-    'policy' => 'manual',
+    'policy' => 'automatic',
 ];

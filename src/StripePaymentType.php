@@ -42,7 +42,7 @@ class StripePaymentType extends AbstractPayment
     {
         $this->stripe = new StripeClient(config('services.stripe.key'));
 
-        $this->policy = config('stripe.policy', 'automatic');
+        $this->policy = config('getcandy.stripe.policy', 'automatic');
     }
 
     /**
