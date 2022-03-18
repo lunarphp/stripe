@@ -98,6 +98,8 @@ use \GetCandy\Stripe\Facades\Stripe;
 Stripe::fetchIntent($paymentIntentId);
 ```
 
+Both these methods will return a `Stripe\PaymentIntent` object.
+
 # Storefront Usage
 
 This addon provides some useful components you can use in your Storefront, they are built using Laravel Livewire and AlpineJs so bear that in mind.
