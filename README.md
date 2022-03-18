@@ -1,7 +1,6 @@
 # GetCandy Stripe
 
-This add on enable Stripe payments on your GetCandy storefront.
-
+This addon enables Stripe payments on your GetCandy storefront.
 
 ## Requirements
 
@@ -101,9 +100,9 @@ Stripe::fetchIntent($paymentIntentId);
 
 # Storefront Usage
 
-This addon provides some useful components you can use in your own Storefront, they are built using Laravel Livewire and AlpineJs so bear that in mind.
+This addon provides some useful components you can use in your Storefront, they are built using Laravel Livewire and AlpineJs so bear that in mind.
 
-If you are using the Demo Store, this is already set up for you so you can refer to the source code to see what's happening.
+If you are using the [Demo Store](https://github.com/getcandy/demo-store), this is already set up for you so you can refer to the source code to see what's happening.
 
 ## Set up the scripts
 
@@ -124,7 +123,7 @@ Wherever you want the payment form to appear, add this component:
 ])
 ```
 
-The `returnUrl` is where we want to Stripe to redirect us when the payment has been processed their side. 
+The `returnUrl` is where we want to Stripe to redirect us when the payment has been processed on their servers. 
 
 **Do NOT point this to the order confirmation page, as you'll see below**
 
@@ -154,6 +153,3 @@ if ($request->payment_intent) {
 And that should be it, you should then see the order in GetCandy with the correct Transactions.
 
 If you have set your policy to `manual` you'll need to go into the Hub and manually capture the payment.
-
-
-
