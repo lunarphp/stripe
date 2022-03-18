@@ -125,7 +125,7 @@ Wherever you want the payment form to appear, add this component:
 ])
 ```
 
-The `returnUrl` is where we want to Stripe to redirect us when the payment has been processed on their servers. 
+The `returnUrl` is where we want Stripe to redirect us afer they have processed the payment on their servers. 
 
 **Do NOT point this to the order confirmation page, as you'll see below**
 
