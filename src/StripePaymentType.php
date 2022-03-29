@@ -60,7 +60,10 @@ class StripePaymentType extends AbstractPayment
 
         if ($this->order->placed_at) {
             // Somethings gone wrong!
-            dd('Eep');
+            return new PaymentCapture(
+                success: false,
+                message: 'This order has already been placed',
+            );
         }
 
         $this->paymentIntent = $this->stripe->paymentIntents->retrieve(

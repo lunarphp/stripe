@@ -9,14 +9,6 @@ use Stripe\Stripe;
 
 class StripeManager
 {
-    /**
-     * The policy when working with payments.
-     *
-     * @var string
-     */
-    protected $policy;
-
-
     public function __construct()
     {
         Stripe::setApiKey(config('services.stripe.key'));
@@ -44,23 +36,11 @@ class StripeManager
             }
         }
 
-        $paymentIntent = PaymentIntent::create([
-            'amount' => $cart->total->value,
-            'currency' => $cart->currency->code,
-            'payment_method_types' => ['card'],
-            'capture_method' => config('getcandy.stripe.policy', 'automatic'),
-            'shipping' => [
-                'name' => "{$shipping->first_name} {$shipping->last_name}",
-                'address' => [
-                    'city' => $shipping->city,
-                    'country' => $shipping->country->iso2,
-                    'line1' => $shipping->line_one,
-                    'line2' => $shipping->line_two,
-                    'postal_code' => $shipping->postcode,
-                    'state' => $shipping->state,
-                ],
-            ],
-        ]);
+        $paymentIntent = $this->buildIntent(
+            $cart->total->value,
+            $cart->currency->code,
+            $shipping,
+        );
 
         if (!$meta) {
             $cart->update([
@@ -92,5 +72,34 @@ class StripeManager
         }
 
         return $intent;
+    }
+
+    /**
+     * Build the intent
+     *
+     * @param int $value
+     * @param string $currencyCode
+     * @param \GetCandy\Models\CartAddress $shipping
+     * @return \Stripe\PaymentIntent
+     */
+    protected function buildIntent($value, $currencyCode, $shipping)
+    {
+        return PaymentIntent::create([
+            'amount' => $value,
+            'currency' => $currencyCode,
+            'payment_method_types' => ['card'],
+            'capture_method' => config('getcandy.stripe.policy', 'automatic'),
+            'shipping' => [
+                'name' => "{$shipping->first_name} {$shipping->last_name}",
+                'address' => [
+                    'city' => $shipping->city,
+                    'country' => $shipping->country->iso2,
+                    'line1' => $shipping->line_one,
+                    'line2' => $shipping->line_two,
+                    'postal_code' => $shipping->postcode,
+                    'state' => $shipping->state,
+                ],
+            ],
+        ]);
     }
 }
