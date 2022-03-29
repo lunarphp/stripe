@@ -1,4 +1,4 @@
-name: GetCandy Tests
+name: Tests
 on:
   pull_request:
 defaults:
