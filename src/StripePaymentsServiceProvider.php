@@ -19,9 +19,9 @@ class StripePaymentsServiceProvider extends ServiceProvider
     public function boot()
     {
         // Register our payment type.
-        // Payments::extend('stripe', function ($app) {
-        //     return $app->make(StripePaymentType::class);
-        // });
+        Payments::extend('stripe', function ($app) {
+            return $app->make(StripePaymentType::class);
+        });
 
         $this->app->singleton('gc:stripe', function ($app) {
             return $app->make(StripeManager::class);
