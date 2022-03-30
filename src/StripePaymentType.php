@@ -61,7 +61,7 @@ class StripePaymentType extends AbstractPayment
 
         if ($this->order->placed_at) {
             // Somethings gone wrong!
-            return new PaymentCapture(
+            return new PaymentRelease(
                 success: false,
                 message: 'This order has already been placed',
             );
@@ -78,8 +78,11 @@ class StripePaymentType extends AbstractPayment
             );
         }
 
-        if (in_array($this->paymentIntent->status, ['success', 'processing', 'requires_capture'])) {
-            return $this->releaseFailed();
+        if (!in_array($this->paymentIntent->status, ['success', 'processing', 'requires_capture'])) {
+            return new PaymentRelease(
+                success: false,
+                message: $this->paymentIntent->last_payment_error,
+            );
         }
 
         return $this->releaseSuccess();
