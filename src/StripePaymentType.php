@@ -7,6 +7,7 @@ use GetCandy\Base\DataTransferObjects\PaymentRefund;
 use GetCandy\Base\DataTransferObjects\PaymentRelease;
 use GetCandy\Models\Transaction;
 use GetCandy\PaymentTypes\AbstractPayment;
+use GetCandy\Stripe\Facades\StripeFacade;
 use Illuminate\Support\Facades\DB;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
@@ -40,7 +41,7 @@ class StripePaymentType extends AbstractPayment
      */
     public function __construct()
     {
-        $this->stripe = new StripeClient(config('services.stripe.key'));
+        $this->stripe = StripeFacade::getClient();
 
         $this->policy = config('getcandy.stripe.policy', 'automatic');
     }
@@ -65,6 +66,7 @@ class StripePaymentType extends AbstractPayment
                 message: 'This order has already been placed',
             );
         }
+
 
         $this->paymentIntent = $this->stripe->paymentIntents->retrieve(
             $this->data['payment_intent']

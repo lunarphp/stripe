@@ -6,12 +6,25 @@ use GetCandy\Models\Cart;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
+use Stripe\StripeClient;
 
 class StripeManager
 {
     public function __construct()
     {
         Stripe::setApiKey(config('services.stripe.key'));
+    }
+
+    /**
+     * Return the Stripe client
+     *
+     * @return void
+     */
+    public function getClient()
+    {
+        return new StripeClient(
+            config('services.stripe.key')
+        );
     }
 
     /**
