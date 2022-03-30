@@ -78,7 +78,7 @@ class StripePaymentType extends AbstractPayment
             );
         }
 
-        if (in_array($this->paymentIntent->status, ['success', 'processing', 'required_capture'])) {
+        if (in_array($this->paymentIntent->status, ['success', 'processing', 'requires_capture'])) {
             return $this->releaseFailed();
         }
 
@@ -189,7 +189,7 @@ class StripePaymentType extends AbstractPayment
             $charges = $this->paymentIntent->charges->data;
 
             $successCharge = collect($charges)->first(function ($charge) {
-                return !$charge->refunded && $charge->status == 'succeeded';
+                return !$charge->refunded && ($charge->status == 'succeeded' || $charge->status == 'paid');
             });
 
             $this->order->update([
