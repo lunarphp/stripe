@@ -67,7 +67,6 @@ class StripePaymentType extends AbstractPayment
             );
         }
 
-
         $this->paymentIntent = $this->stripe->paymentIntents->retrieve(
             $this->data['payment_intent']
         );
@@ -77,6 +76,21 @@ class StripePaymentType extends AbstractPayment
                 $this->data['payment_intent']
             );
         }
+
+        if ($this->cart) {
+            if (!$this->cart->meta) {
+                $this->cart->update([
+                    'meta' => [
+                        'payment_intent' => $this->paymentIntent->id,
+                    ],
+                ]);
+            } else {
+                $this->cart->meta->payment_intent = $this->paymentIntent->id;
+                $this->cart->meta = $this->cart->meta;
+                $this->cart->save();
+            }
+        }
+
 
         if (!in_array($this->paymentIntent->status, ['success', 'processing', 'requires_capture'])) {
             return new PaymentRelease(
