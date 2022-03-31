@@ -11,11 +11,13 @@ use GetCandy\Models\CartLine;
 use GetCandy\Models\Currency;
 use GetCandy\Models\ProductVariant;
 use GetCandy\Models\TaxClass;
+use GetCandy\Models\Transaction;
 use GetCandy\Stripe\Facades\StripeFacade;
 use GetCandy\Stripe\Managers\StripeManager;
 use GetCandy\Stripe\StripePaymentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use stdClass;
+use Stripe\PaymentIntent;
 use Stripe\Service\PaymentIntentService;
 use Stripe\StripeClient;
 use Tests\TestCase;
@@ -26,10 +28,10 @@ class StripePaymentTypeTest extends TestCase
 
     /**
      * Test we can release a payment with Stripe.
-     *
+     * @group noo
      * @return void
      */
-    public function test_an_order_is_released()
+    public function test_an_order_is_captured()
     {
         $currency = Currency::factory()->create([
             'default' => true,
@@ -71,49 +73,18 @@ class StripePaymentTypeTest extends TestCase
             'cart_id' => $cart->id,
         ]);
 
-        $order = $cart->getManager()->createOrder();
-
-
-
-        $this->partialMock(StripeManager::class, function ($mock) {
-            $stripeClient = $this->mock(StripeClient::class);
-
-            $intentService = $this->mock(PaymentIntentService::class);
-
-            $intent = new stdClass;
-            $intent->id = 'FOOBAR';
-
-            $intentService->shouldReceive('retrieve')->andReturn($intent);
-
-            $stripeClient->paymentIntents = $intentService;
-
-            $mock->shouldReceive('getClient')->andReturn($stripeClient);
-        });
-
         $payment = new StripePaymentType;
 
-        $payment->order($order)->withData([
-            'payment_intent' => 'FOOBAR',
+        $payment->cart($cart)->withData([
+            'payment_intent' => 'PI_CAPTURE',
         ])->release();
 
-        dd($payment);
+        $this->assertEquals('PI_CAPTURE', $cart->meta->payment_intent);
 
-        // $this->partialMock(StripeManager::class, function ($mock) {
-        //     $intent = new stdClass;
-        //     $intent->id = 'foobar';
-
-        //     $mock->shouldAllowMockingProtectedMethods()
-        //         ->shouldReceive('buildIntent')
-        //         ->once()
-        //         ->andReturn($intent);
-        // });
-
-        // StripeFacade::createIntent($cart->getManager()->getCart());
-
-        // $this->assertEquals(
-        //     $cart->refresh()->meta->payment_intent,
-        //     'foobar'
-        // );
+        $this->assertDatabaseHas((new Transaction)->getTable(), [
+            'order_id' => $cart->refresh()->order->id,
+            'type' => 'capture',
+        ]);
     }
 
     /**

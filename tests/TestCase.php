@@ -11,6 +11,8 @@ use Kalnoy\Nestedset\NestedSetServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Spatie\Activitylog\ActivitylogServiceProvider;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
+use Stripe\ApiRequestor;
+use Tests\Stripe\MockClient;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -19,8 +21,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
         parent::setUp();
         // additional setup
         Config::set('providers.users.model', User::class);
+        Config::set('services.stripe.key', 'SK_TESTER');
 
         activity()->disableLogging();
+
+        $mockClient = new MockClient;
+        ApiRequestor::setHttpClient($mockClient);
+
     }
 
     protected function getPackageProviders($app)
