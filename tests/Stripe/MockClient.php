@@ -20,16 +20,37 @@ class MockClient implements ClientInterface
 
     public function request($method, $absUrl, $headers, $params, $hasFile)
     {
-        if ($method == "get" && str_contains($absUrl, 'payment_intents')) {
-            $id = array_slice(explode('/', $absUrl), -1)[0];
+        $id = array_slice(explode('/', $absUrl), -1)[0];
 
+        if ($method == "get" && str_contains($absUrl, 'payment_intents')) {
             if (str_contains($absUrl, 'PI_CAPTURE')) {
                 $this->rBody = $this->getResponse('payment_intent_paid', [
                     'id' => $id,
                     'status' => 'success',
                     'payment_status' => 'succeeded',
                 ]);
+                return [$this->rBody, $this->rcode, $this->rheaders];
             }
+
+            if (str_contains($absUrl, 'PI_FAIL')) {
+                $this->rBody = $this->getResponse('payment_intent_paid', [
+                    'id' => $id,
+                    'status' => 'requires_payment_method',
+                    'payment_status' => 'failed',
+                ]);
+                return [$this->rBody, $this->rcode, $this->rheaders];
+            }
+        }
+
+        if ($method == "post" && str_contains($absUrl, 'payment_intents')) {
+            $this->rBody = $this->getResponse('payment_intent_created');
+            return [$this->rBody, $this->rcode, $this->rheaders];
+        }
+
+        if ($method == "get" && str_contains($absUrl, 'payment_intents')) {
+            $this->rBody = $this->getResponse('payment_intent_created', [
+                'id' => $id,
+            ]);
             return [$this->rBody, $this->rcode, $this->rheaders];
         }
 
@@ -66,7 +87,6 @@ class MockClient implements ClientInterface
     {
         $response = File::get(__DIR__.'/responses/'.$filename.'.json');
 
-        dd($response);
         foreach ($replace as $token => $value) {
             $response = str_replace('{'.$token.'}', $value, $response);
         }

@@ -12,6 +12,7 @@ use GetCandy\Stripe\Managers\StripeManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use stdClass;
 use Tests\TestCase;
+use Tests\Utils\CartBuilder;
 
 class StripeManagerTest extends TestCase
 {
@@ -24,44 +25,13 @@ class StripeManagerTest extends TestCase
      */
     public function test_payment_intent_is_created()
     {
-        $currency = Currency::factory()->create([
-            'default' => true,
-        ]);
-
-        $cart = Cart::factory()->create([
-            'currency_id' => $currency->id,
-        ]);
-
-        CartAddress::factory()->create([
-            'cart_id' => $cart->id,
-        ]);
-
-        ProductVariant::factory()->create()->each(function ($variant) use ($currency) {
-            $variant->prices()->create([
-                'price' => 1.99,
-                'currency_id' => $currency->id,
-            ]);
-        });
-
-        CartLine::factory()->create([
-            'cart_id' => $cart->id,
-        ]);
-
-        $this->partialMock(StripeManager::class, function ($mock) {
-            $intent = new stdClass;
-            $intent->id = 'foobar';
-
-            $mock->shouldAllowMockingProtectedMethods()
-                ->shouldReceive('buildIntent')
-                ->once()
-                ->andReturn($intent);
-        });
+        $cart = CartBuilder::build();
 
         StripeFacade::createIntent($cart->getManager()->getCart());
 
         $this->assertEquals(
             $cart->refresh()->meta->payment_intent,
-            'foobar'
+            'pi_1DqH152eZvKYlo2CFHYZuxkP'
         );
     }
 
@@ -72,47 +42,17 @@ class StripeManagerTest extends TestCase
      */
     public function test_existing_intent_is_returned_if_it_exists()
     {
-        $currency = Currency::factory()->create([
-            'default' => true,
-        ]);
-
-        $cart = Cart::factory()->create([
-            'currency_id' => $currency->id,
+        $cart = CartBuilder::build([
             'meta' => [
-                'payment_intent' => 'INTENT-123',
-            ],
+                'payment_intent' => 'PI_FOOBAR',
+            ]
         ]);
-
-        CartAddress::factory()->create([
-            'cart_id' => $cart->id,
-        ]);
-
-        ProductVariant::factory()->create()->each(function ($variant) use ($currency) {
-            $variant->prices()->create([
-                'price' => 1.99,
-                'currency_id' => $currency->id,
-            ]);
-        });
-
-        CartLine::factory()->create([
-            'cart_id' => $cart->id,
-        ]);
-
-        $this->partialMock(StripeManager::class, function ($mock) {
-            $intent = new stdClass;
-            $intent->id = 'INTENT-123';
-
-            $mock->shouldAllowMockingProtectedMethods()
-                ->shouldReceive('fetchIntent')
-                ->once()
-                ->andReturn($intent);
-        });
 
         StripeFacade::createIntent($cart->getManager()->getCart());
 
         $this->assertEquals(
             $cart->refresh()->meta->payment_intent,
-            'INTENT-123'
+            'PI_FOOBAR'
         );
     }
 }
