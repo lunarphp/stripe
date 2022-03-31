@@ -5,7 +5,7 @@
 
 ## Alpha Release
 
-This add on is currently in Alpha, whilst every step is taken to ensure this is working as intended, it will not be considered out of Alpha until more tests have been added and proved.
+This addon is currently in Alpha, whilst every step is taken to ensure this is working as intended, it will not be considered out of Alpha until more tests have been added and proved.
 
 ## Tests required:
 
