@@ -1,6 +1,23 @@
-# GetCandy Stripe
+<p align="center"><img src="https://user-images.githubusercontent.com/1488016/161026191-aab67703-e932-40d0-a4ac-e8bc85fff35e.png" width="300" ></p>
 
-This addon enables Stripe payments on your GetCandy storefront.
+
+<p align="center">This addon enables Stripe payments on your GetCandy storefront.</p>
+
+## Alpha Release
+
+This add on is currently in Alpha, whilst every step is taken to ensure this is working as intended, it will not be considered out of Alpha until more tests have been added and proved.
+
+## Tests required:
+
+- [ ] Successful charge response from Stripe.
+- [ ] Unsuccessful charge response from Stripe.
+- [ ] Test `manual` config reacts appropriately.
+- [ ] Test `automatic` config reacts appropriately.
+- [ ] Ensure transactions are stored correctly in the database
+- [ ] Ensure that the payment intent is not duplicated when using the same Cart
+- [ ] Ensure appropriate responses are returned based on Stripe's responses.
+- [ ] Test refunds and partial refunds create the expected transactions
+- [ ] Make sure we can manually release a payment or part payment and handle the different responses.
 
 ## Requirements
 
@@ -155,3 +172,15 @@ if ($request->payment_intent) {
 And that should be it, you should then see the order in GetCandy with the correct Transactions.
 
 If you have set your policy to `manual` you'll need to go into the Hub and manually capture the payment.
+
+---
+
+### Contributing
+
+Contributions are welcome, if you are thinking of adding a feature, please submit an issue first so we can determine whether it should be included.
+
+
+### Testing
+
+Currently we use a manual [MockClient](https://github.com/getcandy/stripe/blob/main/tests/Stripe/MockClient.php) to mock the responses the Stripe API will return. This is likely to be improved upon as tests are written, but it should be apparent what this is doing, so feel free to add your own responses.
+
