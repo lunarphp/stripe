@@ -12,9 +12,9 @@ This addon is currently in Alpha, whilst every step is taken to ensure this is w
 - [ ] Successful charge response from Stripe.
 - [ ] Unsuccessful charge response from Stripe.
 - [ ] Test `manual` config reacts appropriately.
-- [ ] Test `automatic` config reacts appropriately.
+- [x] Test `automatic` config reacts appropriately.
 - [ ] Ensure transactions are stored correctly in the database
-- [ ] Ensure that the payment intent is not duplicated when using the same Cart
+- [x] Ensure that the payment intent is not duplicated when using the same Cart
 - [ ] Ensure appropriate responses are returned based on Stripe's responses.
 - [ ] Test refunds and partial refunds create the expected transactions
 - [ ] Make sure we can manually release a payment or part payment and handle the different responses.
