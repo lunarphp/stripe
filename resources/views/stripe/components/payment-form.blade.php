@@ -21,7 +21,7 @@
         elements,
         confirmParams: {
           // Make sure to change this to your payment completion page
-          return_url: '{{ $returnUrl }}',
+          return_url: '{{ $returnUrl ?: url()->current() }}',
           payment_method_data: {
             billing_details: {
               name: '{{ $this->billing->first_name }} {{ $this->billing->last_name }}',
@@ -36,6 +36,8 @@
           this.error = result.error.message
           this.processing = false
         }
+      }).catch(error => {
+        this.processing = false
       })
   },
   init() {
