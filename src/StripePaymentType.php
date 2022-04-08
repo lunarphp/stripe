@@ -4,7 +4,7 @@ namespace GetCandy\Stripe;
 
 use GetCandy\Base\DataTransferObjects\PaymentCapture;
 use GetCandy\Base\DataTransferObjects\PaymentRefund;
-use GetCandy\Base\DataTransferObjects\PaymentRelease;
+use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
 use GetCandy\Models\Transaction;
 use GetCandy\PaymentTypes\AbstractPayment;
 use GetCandy\Stripe\Facades\StripeFacade;
@@ -47,11 +47,11 @@ class StripePaymentType extends AbstractPayment
     }
 
     /**
-     * Release the payment for processing.
+     * Authorize the payment for processing.
      *
-     * @return \GetCandy\Base\DataTransferObjects\PaymentRelease
+     * @return \GetCandy\Base\DataTransferObjects\PaymentAuthorize
      */
-    public function release(): PaymentRelease
+    public function authorize(): PaymentAuthorize
     {
         if (!$this->order) {
             if (!$this->order = $this->cart->order) {
@@ -61,7 +61,7 @@ class StripePaymentType extends AbstractPayment
 
         if ($this->order->placed_at) {
             // Somethings gone wrong!
-            return new PaymentRelease(
+            return new PaymentAuthorize(
                 success: false,
                 message: 'This order has already been placed',
             );
@@ -93,7 +93,7 @@ class StripePaymentType extends AbstractPayment
 
 
         if (!in_array($this->paymentIntent->status, ['success', 'processing', 'requires_capture'])) {
-            return new PaymentRelease(
+            return new PaymentAuthorize(
                 success: false,
                 message: $this->paymentIntent->last_payment_error,
             );
@@ -245,6 +245,6 @@ class StripePaymentType extends AbstractPayment
             $this->order->transactions()->createMany($transactions);
         });
 
-        return new PaymentRelease(success: true);
+        return new PaymentAuthorize(success: true);
     }
 }

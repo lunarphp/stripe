@@ -79,7 +79,7 @@ Make sure you have the Stripe credentials set in `config/services.php`
 ],
 ```
 
-> Keys can be found in your Stripe account https://dashboard.stripe.com/apikeys 
+> Keys can be found in your Stripe account https://dashboard.stripe.com/apikeys
 
 ## Configuration
 
@@ -142,7 +142,7 @@ Wherever you want the payment form to appear, add this component:
 ])
 ```
 
-The `returnUrl` is where we want Stripe to redirect us afer they have processed the payment on their servers. 
+The `returnUrl` is where we want Stripe to redirect us afer they have processed the payment on their servers.
 
 **Do NOT point this to the order confirmation page, as you'll see below**
 
@@ -159,8 +159,8 @@ if ($request->payment_intent) {
     $payment = \GetCandy\Facades\Payments::driver('card')->cart($cart)->withData([
         'payment_intent_client_secret' => $request->payment_intent_client_secret,
         'payment_intent' => $request->payment_intent,
-    ])->release();
-    
+    ])->authorize();
+
     if ($payment->success) {
         redirect()->route('checkout-success.view');
         return;
@@ -183,4 +183,3 @@ Contributions are welcome, if you are thinking of adding a feature, please submi
 ### Testing
 
 Currently we use a manual [MockClient](https://github.com/getcandy/stripe/blob/main/tests/Stripe/MockClient.php) to mock the responses the Stripe API will return. This is likely to be improved upon as tests are written, but it should be apparent what this is doing, so feel free to add your own responses.
-
