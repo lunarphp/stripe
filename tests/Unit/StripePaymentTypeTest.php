@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use GetCandy\Base\DataTransferObjects\PaymentRelease;
+use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
 use GetCandy\Models\Transaction;
 use GetCandy\Stripe\Facades\StripeFacade;
 use GetCandy\Stripe\StripePaymentType;
@@ -25,9 +25,9 @@ class StripePaymentTypeTest extends TestCase
 
         $response = $payment->cart($cart)->withData([
             'payment_intent' => 'PI_CAPTURE',
-        ])->release();
+        ])->authorize();
 
-        $this->assertInstanceOf(PaymentRelease::class, $response);
+        $this->assertInstanceOf(PaymentAuthorize::class, $response);
         $this->assertTrue($response->success);
         $this->assertNotNull($cart->refresh()->order->placed_at);
 
@@ -50,9 +50,9 @@ class StripePaymentTypeTest extends TestCase
 
         $response = $payment->cart($cart)->withData([
             'payment_intent' => 'PI_FAIL',
-        ])->release();
+        ])->authorize();
 
-        $this->assertInstanceOf(PaymentRelease::class, $response);
+        $this->assertInstanceOf(PaymentAuthorize::class, $response);
         $this->assertFalse($response->success);
         $this->assertNull($cart->refresh()->order->placed_at);
 
