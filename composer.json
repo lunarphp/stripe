@@ -11,6 +11,7 @@
     }
   ],
   "require": {
+      "php": "^8.0",
       "getcandy/core": "^2.0-beta12",
       "stripe/stripe-php": "^7.114",
       "livewire/livewire": "^2.0"
