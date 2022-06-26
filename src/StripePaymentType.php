@@ -2,16 +2,15 @@
 
 namespace GetCandy\Stripe;
 
+use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
 use GetCandy\Base\DataTransferObjects\PaymentCapture;
 use GetCandy\Base\DataTransferObjects\PaymentRefund;
-use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
 use GetCandy\Models\Transaction;
 use GetCandy\PaymentTypes\AbstractPayment;
 use GetCandy\Stripe\Facades\StripeFacade;
 use Illuminate\Support\Facades\DB;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
-use Stripe\StripeClient;
 
 class StripePaymentType extends AbstractPayment
 {
@@ -91,8 +90,11 @@ class StripePaymentType extends AbstractPayment
             }
         }
 
-
-        if (!in_array($this->paymentIntent->status, ['success', 'processing', 'requires_capture'])) {
+        if (!in_array($this->paymentIntent->status, [
+            'processing',
+            'requires_capture',
+            'succeeded'
+        ])) {
             return new PaymentAuthorize(
                 success: false,
                 message: $this->paymentIntent->last_payment_error,
