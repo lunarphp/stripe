@@ -1,8 +1,8 @@
 <?php
 
-namespace GetCandy\Stripe\Managers;
+namespace Lunar\Stripe\Managers;
 
-use GetCandy\Models\Cart;
+use Lunar\Models\Cart;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
@@ -92,7 +92,7 @@ class StripeManager
      *
      * @param int $value
      * @param string $currencyCode
-     * @param \GetCandy\Models\CartAddress $shipping
+     * @param \Lunar\Models\CartAddress $shipping
      * @return \Stripe\PaymentIntent
      */
     protected function buildIntent($value, $currencyCode, $shipping)
@@ -101,7 +101,7 @@ class StripeManager
             'amount' => $value,
             'currency' => $currencyCode,
             'payment_method_types' => ['card'],
-            'capture_method' => config('getcandy.stripe.policy', 'automatic'),
+            'capture_method' => config('lunar.stripe.policy', 'automatic'),
             'shipping' => [
                 'name' => "{$shipping->first_name} {$shipping->last_name}",
                 'address' => [

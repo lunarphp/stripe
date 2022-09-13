@@ -2,10 +2,10 @@
 
 namespace Tests\Unit;
 
-use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
-use GetCandy\Models\Transaction;
-use GetCandy\Stripe\Facades\StripeFacade;
-use GetCandy\Stripe\StripePaymentType;
+use Lunar\Base\DataTransferObjects\PaymentAuthorize;
+use Lunar\Models\Transaction;
+use Lunar\Stripe\Facades\StripeFacade;
+use Lunar\Stripe\StripePaymentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\Utils\CartBuilder;

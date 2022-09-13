@@ -1,9 +1,9 @@
 <?php
 
-namespace GetCandy\Stripe\Components;
+namespace Lunar\Stripe\Components;
 
-use GetCandy\Models\Cart;
-use GetCandy\Stripe\Facades\StripeFacade;
+use Lunar\Models\Cart;
+use Lunar\Stripe\Facades\StripeFacade;
 use Livewire\Component;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
@@ -73,6 +73,6 @@ class PaymentForm extends Component
      */
     public function render()
     {
-        return view("getcandy::stripe.components.payment-form");
+        return view("lunar::stripe.components.payment-form");
     }
 }

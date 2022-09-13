@@ -1,13 +1,13 @@
 <?php
 
-namespace GetCandy\Stripe;
+namespace Lunar\Stripe;
 
-use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
-use GetCandy\Base\DataTransferObjects\PaymentCapture;
-use GetCandy\Base\DataTransferObjects\PaymentRefund;
-use GetCandy\Models\Transaction;
-use GetCandy\PaymentTypes\AbstractPayment;
-use GetCandy\Stripe\Facades\StripeFacade;
+use Lunar\Base\DataTransferObjects\PaymentAuthorize;
+use Lunar\Base\DataTransferObjects\PaymentCapture;
+use Lunar\Base\DataTransferObjects\PaymentRefund;
+use Lunar\Models\Transaction;
+use Lunar\PaymentTypes\AbstractPayment;
+use Lunar\Stripe\Facades\StripeFacade;
 use Illuminate\Support\Facades\DB;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
@@ -42,13 +42,13 @@ class StripePaymentType extends AbstractPayment
     {
         $this->stripe = StripeFacade::getClient();
 
-        $this->policy = config('getcandy.stripe.policy', 'automatic');
+        $this->policy = config('lunar.stripe.policy', 'automatic');
     }
 
     /**
      * Authorize the payment for processing.
      *
-     * @return \GetCandy\Base\DataTransferObjects\PaymentAuthorize
+     * @return \Lunar\Base\DataTransferObjects\PaymentAuthorize
      */
     public function authorize(): PaymentAuthorize
     {
@@ -107,9 +107,9 @@ class StripePaymentType extends AbstractPayment
     /**
      * Capture a payment for a transaction.
      *
-     * @param \GetCandy\Models\Transaction $transaction
+     * @param \Lunar\Models\Transaction $transaction
      * @param integer $amount
-     * @return \GetCandy\Base\DataTransferObjects\PaymentCapture
+     * @return \Lunar\Base\DataTransferObjects\PaymentCapture
      */
     public function capture(Transaction $transaction, $amount = 0): PaymentCapture
     {
@@ -160,10 +160,10 @@ class StripePaymentType extends AbstractPayment
     /**
      * Refund a captured transaction
      *
-     * @param \GetCandy\Models\Transaction $transaction
+     * @param \Lunar\Models\Transaction $transaction
      * @param integer $amount
      * @param string|null $notes
-     * @return \GetCandy\Base\DataTransferObjects\PaymentRefund
+     * @return \Lunar\Base\DataTransferObjects\PaymentRefund
      */
     public function refund(Transaction $transaction, int $amount = 0, $notes = null): PaymentRefund
     {

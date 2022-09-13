@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Managers;
 
-use GetCandy\Models\Cart;
-use GetCandy\Models\CartAddress;
-use GetCandy\Models\CartLine;
-use GetCandy\Models\Currency;
-use GetCandy\Models\ProductVariant;
-use GetCandy\Stripe\Facades\StripeFacade;
-use GetCandy\Stripe\Managers\StripeManager;
+use Lunar\Models\Cart;
+use Lunar\Models\CartAddress;
+use Lunar\Models\CartLine;
+use Lunar\Models\Currency;
+use Lunar\Models\ProductVariant;
+use Lunar\Stripe\Facades\StripeFacade;
+use Lunar\Stripe\Managers\StripeManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use stdClass;
 use Tests\TestCase;

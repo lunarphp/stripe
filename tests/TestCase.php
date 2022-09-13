@@ -3,9 +3,9 @@
 namespace Tests;
 
 use Cartalyst\Converter\Laravel\ConverterServiceProvider;
-use GetCandy\GetCandyServiceProvider;
-use GetCandy\Stripe\StripePaymentsServiceProvider;
-use GetCandy\Tests\Stubs\User;
+use Lunar\LunarServiceProvider;
+use Lunar\Stripe\StripePaymentsServiceProvider;
+use Lunar\Tests\Stubs\User;
 use Illuminate\Support\Facades\Config;
 use Kalnoy\Nestedset\NestedSetServiceProvider;
 use Livewire\LivewireServiceProvider;
@@ -33,7 +33,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [
-            GetCandyServiceProvider::class,
+            LunarServiceProvider::class,
             StripePaymentsServiceProvider::class,
             LivewireServiceProvider::class,
             MediaLibraryServiceProvider::class,

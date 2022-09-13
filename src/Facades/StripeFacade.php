@@ -1,8 +1,8 @@
 <?php
 
-namespace GetCandy\Stripe\Facades;
+namespace Lunar\Stripe\Facades;
 
-use GetCandy\Base\PricingManagerInterface;
+use Lunar\Base\PricingManagerInterface;
 use Illuminate\Support\Facades\Facade;
 
 class StripeFacade extends Facade
