@@ -21,7 +21,7 @@ This addon is currently in Alpha, whilst every step is taken to ensure this is w
 
 ## Requirements
 
-- Lunar >= `2.0-beta11`
+- Lunar >= `0.1`
 - A [Stripe](http://stripe.com/) account with secret and public keys
 - Laravel Livewire (if using frontend components)
 - Alpinejs (if using frontend components)
