@@ -1,14 +1,14 @@
 <?php
 
-namespace Tests\Unit;
+namespace Lunar\Stripe\Tests\Unit;
 
-use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
-use GetCandy\Models\Transaction;
-use GetCandy\Stripe\Facades\StripeFacade;
-use GetCandy\Stripe\StripePaymentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use Tests\Utils\CartBuilder;
+use Lunar\Base\DataTransferObjects\PaymentAuthorize;
+use Lunar\Models\Transaction;
+use Lunar\Stripe\Facades\StripeFacade;
+use Lunar\Stripe\StripePaymentType;
+use Lunar\Stripe\Tests\TestCase;
+use Lunar\Stripe\Tests\Utils\CartBuilder;
 
 /**
  * @group stripe.payments
@@ -67,7 +67,7 @@ class StripePaymentTypeTest extends TestCase
         $cart = CartBuilder::build([
             'meta' => [
                 'payment_intent' => 'PI_FOOBAR',
-            ]
+            ],
         ]);
 
         StripeFacade::createIntent($cart->getManager()->getCart());

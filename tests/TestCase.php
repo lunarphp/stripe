@@ -1,18 +1,18 @@
 <?php
 
-namespace Tests;
+namespace Lunar\Stripe\Tests;
 
 use Cartalyst\Converter\Laravel\ConverterServiceProvider;
-use GetCandy\GetCandyServiceProvider;
-use GetCandy\Stripe\StripePaymentsServiceProvider;
-use GetCandy\Tests\Stubs\User;
 use Illuminate\Support\Facades\Config;
 use Kalnoy\Nestedset\NestedSetServiceProvider;
 use Livewire\LivewireServiceProvider;
+use Lunar\LunarServiceProvider;
+use Lunar\Stripe\Stripe\MockClient;
+use Lunar\Stripe\StripePaymentsServiceProvider;
+use Lunar\Tests\Stubs\User;
 use Spatie\Activitylog\ActivitylogServiceProvider;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
 use Stripe\ApiRequestor;
-use Tests\Stripe\MockClient;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -33,7 +33,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [
-            GetCandyServiceProvider::class,
+            LunarServiceProvider::class,
             StripePaymentsServiceProvider::class,
             LivewireServiceProvider::class,
             MediaLibraryServiceProvider::class,

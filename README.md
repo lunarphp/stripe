@@ -1,7 +1,7 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/1488016/161026191-aab67703-e932-40d0-a4ac-e8bc85fff35e.png" width="300" ></p>
 
 
-<p align="center">This addon enables Stripe payments on your GetCandy storefront.</p>
+<p align="center">This addon enables Stripe payments on your Lunar storefront.</p>
 
 ## Alpha Release
 
@@ -21,7 +21,7 @@ This addon is currently in Alpha, whilst every step is taken to ensure this is w
 
 ## Requirements
 
-- GetCandy >= `2.0-beta11`
+- Lunar >= `0.1`
 - A [Stripe](http://stripe.com/) account with secret and public keys
 - Laravel Livewire (if using frontend components)
 - Alpinejs (if using frontend components)
@@ -44,7 +44,7 @@ php artisan vendor:publish --tag=getcandy.stripe.config
 
 ### Publish the views (optional)
 
-GetCandy Stripe comes with some helper components for you to use on your checkout, if you intend to edit the views they provide, you can publish them.
+Lunar Stripe comes with some helper components for you to use on your checkout, if you intend to edit the views they provide, you can publish them.
 
 ```sh
 php artisan vendor:publish --tag=getcandy.stripe.components
@@ -96,9 +96,9 @@ Below is a list of the available configuration options this package uses in `con
 ## Creating a PaymentIntent
 
 ```php
-use \GetCandy\Stripe\Facades\Stripe;
+use \Lunar\Stripe\Facades\Stripe;
 
-Stripe::createIntent(\GetCandy\Models\Cart $cart);
+Stripe::createIntent(\Lunar\Models\Cart $cart);
 ```
 
 This method will create a Stripe PaymentIntent from a Cart and add the resulting ID to the meta for retrieval later. If a PaymentIntent already exists for a cart this will fetch it from Stripe and return that instead to avoid duplicate PaymentIntents being created.
@@ -110,7 +110,7 @@ $cart->meta->payment_intent;
 ## Fetch an existing PaymentIntent
 
 ```php
-use \GetCandy\Stripe\Facades\Stripe;
+use \Lunar\Stripe\Facades\Stripe;
 
 Stripe::fetchIntent($paymentIntentId);
 ```
@@ -148,15 +148,15 @@ The `returnUrl` is where we want Stripe to redirect us afer they have processed 
 
 ## Process the result
 
-You'll notice above we've told Stripe to redirect back to the checkout page, this is because although Stripe has either taken payment or allocated funds based on your policy, we still need GetCandy to process the result and create the transactions it needs against the order.
+You'll notice above we've told Stripe to redirect back to the checkout page, this is because although Stripe has either taken payment or allocated funds based on your policy, we still need Lunar to process the result and create the transactions it needs against the order.
 
-When Stripe redirects us we should have two parameters passed in the query string. `payment_intent_client_secret` and `payment_intent`. We can then check for these values and pass them off using GetCandy's Payments driver.
+When Stripe redirects us we should have two parameters passed in the query string. `payment_intent_client_secret` and `payment_intent`. We can then check for these values and pass them off using Lunar's Payments driver.
 
 So, assuming we are using Livewire and on a `CheckoutPage` component (like on the Demo Store)
 
 ```php
 if ($request->payment_intent) {
-    $payment = \GetCandy\Facades\Payments::driver('card')->cart($cart)->withData([
+    $payment = \Lunar\Facades\Payments::driver('card')->cart($cart)->withData([
         'payment_intent_client_secret' => $request->payment_intent_client_secret,
         'payment_intent' => $request->payment_intent,
     ])->authorize();
@@ -169,7 +169,7 @@ if ($request->payment_intent) {
 
 ```
 
-And that should be it, you should then see the order in GetCandy with the correct Transactions.
+And that should be it, you should then see the order in Lunar with the correct Transactions.
 
 If you have set your policy to `manual` you'll need to go into the Hub and manually capture the payment.
 

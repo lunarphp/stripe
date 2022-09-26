@@ -1,18 +1,11 @@
 <?php
 
-namespace Tests\Unit\Managers;
+namespace Lunar\Stripe\Tests\Unit\Managers;
 
-use GetCandy\Models\Cart;
-use GetCandy\Models\CartAddress;
-use GetCandy\Models\CartLine;
-use GetCandy\Models\Currency;
-use GetCandy\Models\ProductVariant;
-use GetCandy\Stripe\Facades\StripeFacade;
-use GetCandy\Stripe\Managers\StripeManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use stdClass;
-use Tests\TestCase;
-use Tests\Utils\CartBuilder;
+use Lunar\Stripe\Facades\StripeFacade;
+use Lunar\Stripe\Tests\TestCase;
+use Lunar\Stripe\Tests\Utils\CartBuilder;
 
 class StripeManagerTest extends TestCase
 {
@@ -45,7 +38,7 @@ class StripeManagerTest extends TestCase
         $cart = CartBuilder::build([
             'meta' => [
                 'payment_intent' => 'PI_FOOBAR',
-            ]
+            ],
         ]);
 
         StripeFacade::createIntent($cart->getManager()->getCart());

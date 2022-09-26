@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Stripe;
+namespace Lunar\Stripe\Tests\Stripe;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -9,26 +9,30 @@ use Stripe\HttpClient\ClientInterface;
 class MockClient implements ClientInterface
 {
     public $rbody = '{}';
+
     public $rcode = 200;
+
     public $rheaders = [];
+
     public $url;
 
     public function __construct()
     {
-        $this->url = "https://checkout.stripe.com/pay/cs_test_".Str::random(32);
+        $this->url = 'https://checkout.stripe.com/pay/cs_test_'.Str::random(32);
     }
 
     public function request($method, $absUrl, $headers, $params, $hasFile)
     {
         $id = array_slice(explode('/', $absUrl), -1)[0];
 
-        if ($method == "get" && str_contains($absUrl, 'payment_intents')) {
+        if ($method == 'get' && str_contains($absUrl, 'payment_intents')) {
             if (str_contains($absUrl, 'PI_CAPTURE')) {
                 $this->rBody = $this->getResponse('payment_intent_paid', [
                     'id' => $id,
                     'status' => 'succeeded',
                     'payment_status' => 'succeeded',
                 ]);
+
                 return [$this->rBody, $this->rcode, $this->rheaders];
             }
 
@@ -38,19 +42,22 @@ class MockClient implements ClientInterface
                     'status' => 'requires_payment_method',
                     'payment_status' => 'failed',
                 ]);
+
                 return [$this->rBody, $this->rcode, $this->rheaders];
             }
         }
 
-        if ($method == "post" && str_contains($absUrl, 'payment_intents')) {
+        if ($method == 'post' && str_contains($absUrl, 'payment_intents')) {
             $this->rBody = $this->getResponse('payment_intent_created');
+
             return [$this->rBody, $this->rcode, $this->rheaders];
         }
 
-        if ($method == "get" && str_contains($absUrl, 'payment_intents')) {
+        if ($method == 'get' && str_contains($absUrl, 'payment_intents')) {
             $this->rBody = $this->getResponse('payment_intent_created', [
                 'id' => $id,
             ]);
+
             return [$this->rBody, $this->rcode, $this->rheaders];
         }
 
@@ -79,8 +86,8 @@ class MockClient implements ClientInterface
     /**
      * Fetches a response for the mock
      *
-     * @param string $filename
-     * @param array $replace
+     * @param  string  $filename
+     * @param  array  $replace
      * @return string
      */
     protected function getResponse($filename, $replace = [])

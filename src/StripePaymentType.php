@@ -1,14 +1,14 @@
 <?php
 
-namespace GetCandy\Stripe;
+namespace Lunar\Stripe;
 
-use GetCandy\Base\DataTransferObjects\PaymentAuthorize;
-use GetCandy\Base\DataTransferObjects\PaymentCapture;
-use GetCandy\Base\DataTransferObjects\PaymentRefund;
-use GetCandy\Models\Transaction;
-use GetCandy\PaymentTypes\AbstractPayment;
-use GetCandy\Stripe\Facades\StripeFacade;
 use Illuminate\Support\Facades\DB;
+use Lunar\Base\DataTransferObjects\PaymentAuthorize;
+use Lunar\Base\DataTransferObjects\PaymentCapture;
+use Lunar\Base\DataTransferObjects\PaymentRefund;
+use Lunar\Models\Transaction;
+use Lunar\PaymentTypes\AbstractPayment;
+use Lunar\Stripe\Facades\StripeFacade;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 
@@ -42,18 +42,18 @@ class StripePaymentType extends AbstractPayment
     {
         $this->stripe = StripeFacade::getClient();
 
-        $this->policy = config('getcandy.stripe.policy', 'automatic');
+        $this->policy = config('lunar.stripe.policy', 'automatic');
     }
 
     /**
      * Authorize the payment for processing.
      *
-     * @return \GetCandy\Base\DataTransferObjects\PaymentAuthorize
+     * @return \Lunar\Base\DataTransferObjects\PaymentAuthorize
      */
     public function authorize(): PaymentAuthorize
     {
-        if (!$this->order) {
-            if (!$this->order = $this->cart->order) {
+        if (! $this->order) {
+            if (! $this->order = $this->cart->order) {
                 $this->order = $this->cart->getManager()->createOrder();
             }
         }
@@ -77,7 +77,7 @@ class StripePaymentType extends AbstractPayment
         }
 
         if ($this->cart) {
-            if (!$this->cart->meta) {
+            if (! $this->cart->meta) {
                 $this->cart->update([
                     'meta' => [
                         'payment_intent' => $this->paymentIntent->id,
@@ -90,10 +90,10 @@ class StripePaymentType extends AbstractPayment
             }
         }
 
-        if (!in_array($this->paymentIntent->status, [
+        if (! in_array($this->paymentIntent->status, [
             'processing',
             'requires_capture',
-            'succeeded'
+            'succeeded',
         ])) {
             return new PaymentAuthorize(
                 success: false,
@@ -107,9 +107,9 @@ class StripePaymentType extends AbstractPayment
     /**
      * Capture a payment for a transaction.
      *
-     * @param \GetCandy\Models\Transaction $transaction
-     * @param integer $amount
-     * @return \GetCandy\Base\DataTransferObjects\PaymentCapture
+     * @param  \Lunar\Models\Transaction  $transaction
+     * @param  int  $amount
+     * @return \Lunar\Base\DataTransferObjects\PaymentCapture
      */
     public function capture(Transaction $transaction, $amount = 0): PaymentCapture
     {
@@ -160,10 +160,10 @@ class StripePaymentType extends AbstractPayment
     /**
      * Refund a captured transaction
      *
-     * @param \GetCandy\Models\Transaction $transaction
-     * @param integer $amount
-     * @param string|null $notes
-     * @return \GetCandy\Base\DataTransferObjects\PaymentRefund
+     * @param  \Lunar\Models\Transaction  $transaction
+     * @param  int  $amount
+     * @param  string|null  $notes
+     * @return \Lunar\Base\DataTransferObjects\PaymentRefund
      */
     public function refund(Transaction $transaction, int $amount = 0, $notes = null): PaymentRefund
     {
@@ -208,7 +208,7 @@ class StripePaymentType extends AbstractPayment
             $charges = $this->paymentIntent->charges->data;
 
             $successCharge = collect($charges)->first(function ($charge) {
-                return !$charge->refunded && ($charge->status == 'succeeded' || $charge->status == 'paid');
+                return ! $charge->refunded && ($charge->status == 'succeeded' || $charge->status == 'paid');
             });
 
             $this->order->update([

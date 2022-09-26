@@ -1,8 +1,8 @@
 <?php
 
-namespace GetCandy\Stripe\Managers;
+namespace Lunar\Stripe\Managers;
 
-use GetCandy\Models\Cart;
+use Lunar\Models\Cart;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
@@ -30,7 +30,7 @@ class StripeManager
     /**
      * Create a payment intent from a Cart
      *
-     * @param Cart $cart
+     * @param  Cart  $cart
      * @return \Stripe\PaymentIntent
      */
     public function createIntent(Cart $cart)
@@ -55,7 +55,7 @@ class StripeManager
             $shipping,
         );
 
-        if (!$meta) {
+        if (! $meta) {
             $cart->update([
                 'meta' => [
                     'payment_intent' => $paymentIntent->id,
@@ -73,7 +73,7 @@ class StripeManager
     /**
      * Fetch an intent from the Stripe API.
      *
-     * @param string $intentId
+     * @param  string  $intentId
      * @return null|\Stripe\PaymentIntent
      */
     public function fetchIntent($intentId)
@@ -90,9 +90,9 @@ class StripeManager
     /**
      * Build the intent
      *
-     * @param int $value
-     * @param string $currencyCode
-     * @param \GetCandy\Models\CartAddress $shipping
+     * @param  int  $value
+     * @param  string  $currencyCode
+     * @param  \Lunar\Models\CartAddress  $shipping
      * @return \Stripe\PaymentIntent
      */
     protected function buildIntent($value, $currencyCode, $shipping)
@@ -101,7 +101,7 @@ class StripeManager
             'amount' => $value,
             'currency' => $currencyCode,
             'payment_method_types' => ['card'],
-            'capture_method' => config('getcandy.stripe.policy', 'automatic'),
+            'capture_method' => config('lunar.stripe.policy', 'automatic'),
             'shipping' => [
                 'name' => "{$shipping->first_name} {$shipping->last_name}",
                 'address' => [

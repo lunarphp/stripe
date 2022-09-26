@@ -1,17 +1,17 @@
 <?php
 
-namespace Tests\Utils;
+namespace Lunar\Stripe\Tests\Utils;
 
-use GetCandy\DataTypes\Price;
-use GetCandy\DataTypes\ShippingOption;
-use GetCandy\Facades\ShippingManifest;
-use GetCandy\Models\Cart;
-use GetCandy\Models\CartAddress;
-use GetCandy\Models\CartLine;
-use GetCandy\Models\Currency;
-use GetCandy\Models\Language;
-use GetCandy\Models\ProductVariant;
-use GetCandy\Models\TaxClass;
+use Lunar\DataTypes\Price;
+use Lunar\DataTypes\ShippingOption;
+use Lunar\Facades\ShippingManifest;
+use Lunar\Models\Cart;
+use Lunar\Models\CartAddress;
+use Lunar\Models\CartLine;
+use Lunar\Models\Currency;
+use Lunar\Models\Language;
+use Lunar\Models\ProductVariant;
+use Lunar\Models\TaxClass;
 
 class CartBuilder
 {
