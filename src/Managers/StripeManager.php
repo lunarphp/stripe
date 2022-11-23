@@ -37,11 +37,11 @@ class StripeManager
     {
         $shipping = $cart->shippingAddress;
 
-        $meta = $cart->meta;
+        $meta = (array) $cart->meta;
 
-        if ($meta && $meta->payment_intent) {
+        if ($meta && !empty($meta['payment_intent'])) {
             $intent = $this->fetchIntent(
-                $meta->payment_intent
+                $meta['payment_intent']
             );
 
             if ($intent) {
@@ -62,7 +62,7 @@ class StripeManager
                 ],
             ]);
         } else {
-            $meta->payment_intent = $paymentIntent->id;
+            $meta['payment_intent'] = $paymentIntent->id;
             $cart->meta = $meta;
             $cart->save();
         }
