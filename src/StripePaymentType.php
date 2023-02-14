@@ -54,7 +54,7 @@ class StripePaymentType extends AbstractPayment
     {
         if (! $this->order) {
             if (! $this->order = $this->cart->order) {
-                $this->order = $this->cart->getManager()->createOrder();
+                $this->order = $this->cart->createOrder();
             }
         }
 
@@ -203,7 +203,6 @@ class StripePaymentType extends AbstractPayment
     private function releaseSuccess()
     {
         DB::transaction(function () {
-
             // Get our first successful charge.
             $charges = $this->paymentIntent->charges->data;
 
