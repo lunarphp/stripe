@@ -5,7 +5,6 @@ namespace Lunar\Stripe\Components;
 use Livewire\Component;
 use Lunar\Models\Cart;
 use Lunar\Stripe\Facades\StripeFacade;
-use Stripe\PaymentIntent;
 use Stripe\Stripe;
 
 class PaymentForm extends Component

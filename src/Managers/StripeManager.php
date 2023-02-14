@@ -39,7 +39,7 @@ class StripeManager
 
         $meta = (array) $cart->meta;
 
-        if ($meta && !empty($meta['payment_intent'])) {
+        if ($meta && ! empty($meta['payment_intent'])) {
             $intent = $this->fetchIntent(
                 $meta['payment_intent']
             );
