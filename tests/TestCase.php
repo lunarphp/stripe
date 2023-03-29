@@ -27,7 +27,6 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $mockClient = new MockClient;
         ApiRequestor::setHttpClient($mockClient);
-
     }
 
     protected function getPackageProviders($app)
