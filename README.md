@@ -1,10 +1,7 @@
-<p align="center"><a href="https://lunarphp.io/" target="_blank"><img src="https://raw.githubusercontent.com/lunarphp/art/main/lunar-logo.svg" width="200" alt="Lunar"></a></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/1488016/161026191-aab67703-e932-40d0-a4ac-e8bc85fff35e.png" width="300" ></p>
 
 
-# Stripe for Lunar
-
-This addon enables Stripe payments on your Lunar storefront.
-
+<p align="center">This addon enables Stripe payments on your Lunar storefront.</p>
 
 ## Alpha Release
 

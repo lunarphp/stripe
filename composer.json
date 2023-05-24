@@ -12,7 +12,7 @@
   ],
   "require": {
       "php": "^8.0",
-      "lunarphp/lunar": "^0.2",
+      "lunarphp/lunar": "^0.3",
       "stripe/stripe-php": "^7.114",
       "livewire/livewire": "^2.0"
   },
