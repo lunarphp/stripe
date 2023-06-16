@@ -50,7 +50,7 @@ class StripeManager
         }
 
         $paymentIntent = $this->buildIntent(
-            $cart->total->value,
+            (int)round($cart->total->value * pow(10, 2 - $cart->currency->decimal_places)),
             $cart->currency->code,
             $shipping,
         );
