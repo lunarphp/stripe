@@ -1,6 +1,5 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/1488016/161026191-aab67703-e932-40d0-a4ac-e8bc85fff35e.png" width="300" ></p>
 
-
 <p align="center">This addon enables Stripe payments on your Lunar storefront.</p>
 
 ## Alpha Release
@@ -31,15 +30,15 @@ This addon is currently in Alpha, whilst every step is taken to ensure this is w
 ### Require the composer package
 
 ```sh
-composer require getcandy/stripe
+composer require lunarphp/stripe
 ```
 
 ### Publish the configuration
 
-This will publish the configuration under `config/getcandy/stripe.php`.
+This will publish the configuration under `config/lunar/stripe.php`.
 
 ```sh
-php artisan vendor:publish --tag=getcandy.stripe.config
+php artisan vendor:publish --tag=lunar.stripe.config
 ```
 
 ### Publish the views (optional)
@@ -47,12 +46,12 @@ php artisan vendor:publish --tag=getcandy.stripe.config
 Lunar Stripe comes with some helper components for you to use on your checkout, if you intend to edit the views they provide, you can publish them.
 
 ```sh
-php artisan vendor:publish --tag=getcandy.stripe.components
+php artisan vendor:publish --tag=lunar.stripe.components
 ```
 
 ### Enable the driver
 
-Set the driver in `config/getcandy/payments.php`
+Set the driver in `config/lunar/payments.php`
 
 ```php
 <?php
@@ -85,8 +84,8 @@ Make sure you have the Stripe credentials set in `config/services.php`
 
 Below is a list of the available configuration options this package uses in `config/getcandy/stripe.php`
 
-| Key | Default | Description |
-| --- | --- | --- |
+| Key      | Default     | Description                                                                                                                                                                   |
+| -------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `policy` | `automatic` | Determines the policy for taking payments and whether you wish to capture the payment manually later or take payment straight away. Available options `manual` or `automatic` |
 
 ---
@@ -178,7 +177,6 @@ If you have set your policy to `manual` you'll need to go into the Hub and manua
 ### Contributing
 
 Contributions are welcome, if you are thinking of adding a feature, please submit an issue first so we can determine whether it should be included.
-
 
 ### Testing
 
