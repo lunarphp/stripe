@@ -2,7 +2,6 @@
     "name": "gamers-geek/stripe",
     "type": "project",
     "description": "Stripe payment driver for Lunar.",
-    "version": "0.6.0",
     "keywords": [
         "lunarphp",
         "laravel",
