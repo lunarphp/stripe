@@ -30,7 +30,7 @@ This addon is currently in Alpha, whilst every step is taken to ensure this is w
 ### Require the composer package
 
 ```sh
-composer require lunarphp/stripe
+composer require gamers-geek/stripe
 ```
 
 ### Publish the configuration
