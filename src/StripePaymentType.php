@@ -67,12 +67,14 @@ class StripePaymentType extends AbstractPayment
         }
 
         $this->paymentIntent = $this->stripe->paymentIntents->retrieve(
-            $this->data['payment_intent']
+            $this->data['payment_intent'],
+            ['expand' => ['latest_charge']]
         );
 
         if ($this->paymentIntent->status == 'requires_capture' && $this->policy == 'automatic') {
             $this->paymentIntent = $this->stripe->paymentIntents->capture(
-                $this->data['payment_intent']
+                $this->data['payment_intent'],
+                ['expand' => ['latest_charge']]
             );
         }
 
@@ -85,7 +87,6 @@ class StripePaymentType extends AbstractPayment
                 ]);
             } else {
                 $this->cart->meta->payment_intent = $this->paymentIntent->id;
-                $this->cart->meta = $this->cart->meta;
                 $this->cart->save();
             }
         }
@@ -122,7 +123,7 @@ class StripePaymentType extends AbstractPayment
         try {
             $response = $this->stripe->paymentIntents->capture(
                 $transaction->reference,
-                $payload
+                array_merge($payload, ['expand' => ['latest_charge']])
             );
         } catch (InvalidRequestException $e) {
             return new PaymentCapture(
@@ -131,28 +132,20 @@ class StripePaymentType extends AbstractPayment
             );
         }
 
-        $charges = $response->charges->data;
-
-        $transactions = [];
-
-        foreach ($charges as $charge) {
-            $card = $charge->payment_method_details->card;
-            $transactions[] = [
-                'parent_transaction_id' => $transaction->id,
-                'success' => $charge->status != 'failed',
-                'type' => 'capture',
-                'driver' => 'stripe',
-                'amount' => $charge->amount_captured,
-                'reference' => $response->id,
-                'status' => $charge->status,
-                'notes' => $charge->failure_message,
-                'card_type' => $card->brand,
-                'last_four' => $card->last4,
-                'captured_at' => $charge->amount_captured ? now() : null,
-            ];
-        }
-
-        $transaction->order->transactions()->createMany($transactions);
+        $card = $response->latest_charge->payment_method_details->card;
+        $transaction->order->transactions()->createMany([
+            'parent_transaction_id' => $transaction->id,
+            'success' => $response->latest_charge->status != 'failed',
+            'type' => 'capture',
+            'driver' => 'stripe',
+            'amount' => $response->latest_charge->amount_captured,
+            'reference' => $response->id,
+            'status' => $response->latest_charge->status,
+            'notes' => $response->latest_charge->failure_message,
+            'card_type' => $card->brand,
+            'last_four' => $card->last4,
+            'captured_at' => $response->latest_charge->amount_captured ? now() : null,
+        ]);
 
         return new PaymentCapture(success: true);
     }
@@ -198,17 +191,12 @@ class StripePaymentType extends AbstractPayment
     /**
      * Return a successfully released payment.
      *
-     * @return void
+     * @return PaymentAuthorize
      */
     private function releaseSuccess()
     {
         DB::transaction(function () {
-            // Get our first successful charge.
-            $charges = $this->paymentIntent->charges->data;
-
-            $successCharge = collect($charges)->first(function ($charge) {
-                return ! $charge->refunded && ($charge->status == 'succeeded' || $charge->status == 'paid');
-            });
+            $successCharge = $this->paymentIntent->latest_charge;
 
             $this->order->update([
                 'status' => $this->config['released'] ?? 'paid',
@@ -223,27 +211,24 @@ class StripePaymentType extends AbstractPayment
                 $type = 'intent';
             }
 
-            foreach ($charges as $charge) {
-                $card = $charge->payment_method_details->card;
-                $transactions[] = [
-                    'success' => $charge->status != 'failed',
-                    'type' => $charge->amount_refunded ? 'refund' : $type,
-                    'driver' => 'stripe',
-                    'amount' => $charge->amount,
-                    'reference' => $this->paymentIntent->id,
-                    'status' => $charge->status,
-                    'notes' => $charge->failure_message,
-                    'card_type' => $card->brand,
-                    'last_four' => $card->last4,
-                    'captured_at' => $charge->amount_captured ? now() : null,
-                    'meta' => [
-                        'address_line1_check' => $card->checks->address_line1_check,
-                        'address_postal_code_check' => $card->checks->address_postal_code_check,
-                        'cvc_check' => $card->checks->cvc_check,
-                    ],
-                ];
-            }
-            $this->order->transactions()->createMany($transactions);
+            $card = $successCharge->payment_method_details->card;
+            $this->order->transactions()->create([
+                'success' => $successCharge->status != 'failed',
+                'type' => $successCharge->amount_refunded ? 'refund' : $type,
+                'driver' => 'stripe',
+                'amount' => $successCharge->amount,
+                'reference' => $this->paymentIntent->id,
+                'status' => $successCharge->status,
+                'notes' => $successCharge->failure_message,
+                'card_type' => $card->brand,
+                'last_four' => $card->last4,
+                'captured_at' => $successCharge->amount_captured ? now() : null,
+                'meta' => [
+                    'address_line1_check' => $card->checks->address_line1_check,
+                    'address_postal_code_check' => $card->checks->address_postal_code_check,
+                    'cvc_check' => $card->checks->cvc_check,
+                ],
+            ]);
         });
 
         return new PaymentAuthorize(success: true);

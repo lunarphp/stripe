@@ -22,10 +22,9 @@ class StripeManager
      */
     public function getClient()
     {
-        return new StripeClient([
-            'api_key' => config('services.stripe.key'),
-            'stripe_version' => '2022-08-01'
-        ]);
+        return new StripeClient(
+            config('services.stripe.key')
+        );
     }
 
     /**
