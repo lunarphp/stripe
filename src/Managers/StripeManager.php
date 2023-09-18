@@ -70,6 +70,22 @@ class StripeManager
         return $paymentIntent;
     }
 
+    public function syncIntent(Cart $cart)
+    {
+        $meta = (array) $cart->meta;
+
+        if (empty($meta['payment_intent'])) {
+            return;
+        }
+
+        $cart = $cart->calculate();
+
+        $this->getClient()->paymentIntents->update(
+            $meta['payment_intent'],
+            ['amount' => $cart->total->value]
+        );
+    }
+
     /**
      * Fetch an intent from the Stripe API.
      *
@@ -100,7 +116,7 @@ class StripeManager
         return PaymentIntent::create([
             'amount' => $value,
             'currency' => $currencyCode,
-            'payment_method_types' => ['card'],
+            'automatic_payment_methods' => ['enabled' => true],
             'capture_method' => config('lunar.stripe.policy', 'automatic'),
             'shipping' => [
                 'name' => "{$shipping->first_name} {$shipping->last_name}",
