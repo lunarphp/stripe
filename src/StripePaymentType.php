@@ -84,14 +84,14 @@ class StripePaymentType extends AbstractPayment
         }
 
         if ($this->cart) {
-            if (! $this->cart->meta) {
+            if (! ($this->cart->meta['payment_intent'] ?? null)) {
                 $this->cart->update([
                     'meta' => [
                         'payment_intent' => $this->paymentIntent->id,
                     ],
                 ]);
             } else {
-                $this->cart->meta->payment_intent = $this->paymentIntent->id;
+                $this->cart->meta['payment_intent'] = $this->paymentIntent->id;
                 $this->cart->save();
             }
         }

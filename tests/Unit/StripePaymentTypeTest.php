@@ -29,19 +29,16 @@ class StripePaymentTypeTest extends TestCase
 
         $this->assertInstanceOf(PaymentAuthorize::class, $response);
         $this->assertTrue($response->success);
-        $this->assertNotNull($cart->refresh()->order->placed_at);
+        $this->assertNotNull($cart->refresh()->completedOrder->placed_at);
 
-        $this->assertEquals('PI_CAPTURE', $cart->meta->payment_intent);
+        $this->assertEquals('PI_CAPTURE', $cart->meta['payment_intent']);
 
         $this->assertDatabaseHas((new Transaction)->getTable(), [
-            'order_id' => $cart->refresh()->order->id,
+            'order_id' => $cart->refresh()->completedOrder->id,
             'type' => 'capture',
         ]);
     }
 
-    /**
-     * @group thisone
-     */
     public function test_handle_failed_payment()
     {
         $cart = CartBuilder::build();
@@ -54,10 +51,10 @@ class StripePaymentTypeTest extends TestCase
 
         $this->assertInstanceOf(PaymentAuthorize::class, $response);
         $this->assertFalse($response->success);
-        $this->assertNull($cart->refresh()->order->placed_at);
+        $this->assertNull($cart->refresh()->draftOrder->placed_at);
 
         $this->assertDatabaseMissing((new Transaction)->getTable(), [
-            'order_id' => $cart->refresh()->order->id,
+            'order_id' => $cart->refresh()->draftOrder->id,
             'type' => 'capture',
         ]);
     }
@@ -70,10 +67,10 @@ class StripePaymentTypeTest extends TestCase
             ],
         ]);
 
-        StripeFacade::createIntent($cart->getCart());
+        StripeFacade::createIntent($cart->calculate());
 
         $this->assertEquals(
-            $cart->refresh()->meta->payment_intent,
+            $cart->refresh()->meta['payment_intent'],
             'PI_FOOBAR'
         );
     }

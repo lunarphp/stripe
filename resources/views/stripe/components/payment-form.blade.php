@@ -9,12 +9,12 @@
     this.error = null
 
     address = {
-      city: '{{ $this->billing->city }}',
-      country: '{{ $this->billing->country->iso2 }}',
-      line1: '{{ $this->billing->line_one }}',
-      line2: '{{ $this->billing->line_two }}',
-      postal_code: '{{ $this->billing->postcode }}',
-      state: '{{ $this->billing->state }}',
+      city: '{{ addslashes($this->billing->city) }}',
+      country: '{{ addslashes($this->billing->country->iso2) }}',
+      line1: '{{ addslashes($this->billing->line_one) }}',
+      line2: '{{ addslashes($this->billing->line_two) }}',
+      postal_code: '{{ addslashes($this->billing->postcode) }}',
+      state: '{{ addslashes($this->billing->state) }}',
     }
 
     this.stripe.confirmPayment({
@@ -60,10 +60,6 @@
     <div x-ref="paymentElement">
       <!--Stripe.js injects the Payment Element-->
     </div>
-    {{-- <button id="submit">
-      <div class="hidden spinner" id="spinner"></div>
-      <span id="button-text">Pay now</span>
-    </button> --}}
     <div class="mt-4">
       <button
         class="flex items-center px-5 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 disabled:opacity-50"

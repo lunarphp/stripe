@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\Config;
 use Kalnoy\Nestedset\NestedSetServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Lunar\LunarServiceProvider;
-use Lunar\Stripe\Stripe\MockClient;
 use Lunar\Stripe\StripePaymentsServiceProvider;
+use Lunar\Stripe\Tests\Stripe\MockClient;
 use Lunar\Tests\Stubs\User;
 use Spatie\Activitylog\ActivitylogServiceProvider;
+use Spatie\LaravelBlink\BlinkServiceProvider;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
 use Stripe\ApiRequestor;
 
@@ -25,7 +26,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         activity()->disableLogging();
 
-        $mockClient = new MockClient;
+        $mockClient = new MockClient();
         ApiRequestor::setHttpClient($mockClient);
     }
 
@@ -33,6 +34,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         return [
             LunarServiceProvider::class,
+            BlinkServiceProvider::class,
             StripePaymentsServiceProvider::class,
             LivewireServiceProvider::class,
             MediaLibraryServiceProvider::class,

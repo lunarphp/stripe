@@ -19,19 +19,23 @@ This addon is currently in Alpha, whilst every step is taken to ensure this is w
 - [ ] Test refunds and partial refunds create the expected transactions
 - [ ] Make sure we can manually release a payment or part payment and handle the different responses.
 
-## Requirements
+## Minimum Requirements
 
-- Lunar >= `0.1`
+- Lunar >= `0.6`
 - A [Stripe](http://stripe.com/) account with secret and public keys
+
+## Optional Requirements
+
 - Laravel Livewire (if using frontend components)
 - Alpinejs (if using frontend components)
+- Javascript framework
 
 ## Installation
 
 ### Require the composer package
 
 ```sh
-composer require getcandy/stripe
+composer require lunarphp/stripe
 ```
 
 ### Publish the configuration
@@ -91,9 +95,9 @@ Below is a list of the available configuration options this package uses in `con
 
 ---
 
-# Backend Usage
+## Backend Usage
 
-## Creating a PaymentIntent
+### Create a PaymentIntent
 
 ```php
 use \Lunar\Stripe\Facades\Stripe;
@@ -104,10 +108,13 @@ Stripe::createIntent(\Lunar\Models\Cart $cart);
 This method will create a Stripe PaymentIntent from a Cart and add the resulting ID to the meta for retrieval later. If a PaymentIntent already exists for a cart this will fetch it from Stripe and return that instead to avoid duplicate PaymentIntents being created.
 
 ```php
+$paymentIntentId = $cart->meta['payment_intent']; // The resulting ID from the method above.
+```
+```php
 $cart->meta->payment_intent;
 ```
 
-## Fetch an existing PaymentIntent
+### Fetch an existing PaymentIntent
 
 ```php
 use \Lunar\Stripe\Facades\Stripe;
@@ -115,71 +122,141 @@ use \Lunar\Stripe\Facades\Stripe;
 Stripe::fetchIntent($paymentIntentId);
 ```
 
-Both these methods will return a `Stripe\PaymentIntent` object.
+### Syncing an existing intent
 
-# Storefront Usage
-
-This addon provides some useful components you can use in your Storefront, they are built using Laravel Livewire and AlpineJs so bear that in mind.
-
-If you are using the [Demo Store](https://github.com/getcandy/demo-store), this is already set up for you so you can refer to the source code to see what's happening.
-
-## Set up the scripts
-
-Place this in the `<head>` of your Storefront.
-
-```blade
-@stripeScripts
-```
-
-## Add the payment component
-
-Wherever you want the payment form to appear, add this component:
-
-```blade
-@livewire('stripe.payment', [
-  'cart' => $cart,
-  'returnUrl' => route('checkout.view'),
-])
-```
-
-The `returnUrl` is where we want Stripe to redirect us afer they have processed the payment on their servers.
-
-**Do NOT point this to the order confirmation page, as you'll see below**
-
-## Process the result
-
-You'll notice above we've told Stripe to redirect back to the checkout page, this is because although Stripe has either taken payment or allocated funds based on your policy, we still need Lunar to process the result and create the transactions it needs against the order.
-
-When Stripe redirects us we should have two parameters passed in the query string. `payment_intent_client_secret` and `payment_intent`. We can then check for these values and pass them off using Lunar's Payments driver.
-
-So, assuming we are using Livewire and on a `CheckoutPage` component (like on the Demo Store)
+If a payment intent has been created and there are changes to the cart, you will want to update the intent to it has the correct totals.
 
 ```php
-if ($request->payment_intent) {
-    $payment = \Lunar\Facades\Payments::driver('card')->cart($cart)->withData([
-        'payment_intent_client_secret' => $request->payment_intent_client_secret,
-        'payment_intent' => $request->payment_intent,
-    ])->authorize();
+use \Lunar\Stripe\Facades\Stripe;
 
-    if ($payment->success) {
-        redirect()->route('checkout-success.view');
-        return;
-    }
-}
-
+Stripe::syncIntent(\Lunar\Models\Cart $cart);
 ```
 
-And that should be it, you should then see the order in Lunar with the correct Transactions.
+## Webhooks
 
-If you have set your policy to `manual` you'll need to go into the Hub and manually capture the payment.
+The plugin provides a webhook you will need to add to Stripe. You can read the guide on how to do this on the Stripe website [https://stripe.com/docs/webhooks/quickstart](https://stripe.com/docs/webhooks/quickstart).
 
+The 3 events you should listen to are `payment_intent.payment_failed`,`payment_intent.processing`,`payment_intent.succeeded`. 
+
+The path to the webhook will be `http:://yoursite.com/stripe/webhook`.
+
+## Storefront Examples
+
+First we need to set up the backend API call to fetch or create the intent, this isn't Vue specific but will likely be different if you're using Livewire.
+
+```php
+use \Lunar\Stripe\Facades\Stripe;
+
+Route::post('api/payment-intent', function () {
+    $cart = CartSession::current();
+
+    $cartData = CartData::from($cart);
+
+    if ($paymentIntent = $cartData->meta['payment_intent'] ?? false) {
+        $intent = StripeFacade::fetchIntent($paymentIntent);
+    } else {
+        $intent = StripeFacade::createIntent($cart);
+    }
+
+    if ($intent->amount != $cart->total->value) {
+        StripeFacade::syncIntent($cart);
+    }
+        
+    return $intent;
+})->middleware('web');
+```
+
+### Vuejs
+
+This is just using Stripe's payment elements, for more information [check out the Stripe guides](https://stripe.com/docs/payments/elements)
+
+### Payment component
+
+```js
+<script setup>
+const { VITE_STRIPE_PK } = import.meta.env
+
+const stripe = Stripe(VITE_STRIPE_PK)
+const stripeElements = ref({})
+
+const buildForm = async () => {
+    const { data } = await axios.post("api/payment-intent")
+
+    stripeElements.value = stripe.elements({
+        clientSecret: data.client_secret,
+    })
+
+    const paymentElement = stripeElements.value.create("payment", {
+        layout: "tabs",
+        defaultValues: {
+            billingDetails: {
+                name: `${billingAddress.value.first_name} ${billingAddress.value?.last_name}`,
+                phone: billingAddress.value?.contact_phone,
+            },
+        },
+        fields: {
+            billingDetails: "never",
+        },
+    })
+
+    paymentElement.mount("#payment-element")
+}
+
+onMounted(async () => {
+    await buildForm()
+})
+
+// The address object can be either passed through as props or via a second API call, but it should likely come from the cart.
+
+const submit = async () => {
+    try {
+        const address = {...}
+
+        const { error } = await stripe.confirmPayment({
+            //`Elements` instance that was used to create the Payment Element
+            elements: stripeElements.value,
+            confirmParams: {
+                return_url: 'http://yoursite.com/checkout/complete',
+                payment_method_data: {
+                    billing_details: {
+                        name: `${address.first_name} ${address.last_name}`,
+                        email: address.contact_email,
+                        phone: address.contact_phone,
+                        address: {
+                            city: address.city,
+                            country: address.country.iso2,
+                            line1: address.line_one,
+                            line2: address.line_two,
+                            postal_code: address.postcode,
+                            state: address.state,
+                        },
+                    },
+                },
+            },
+        })
+    } catch (e) {
+    
+    }
+}
+</script>
+```
+
+```html
+<template>
+    <form @submit.prevent="submit">
+        <div id="payment-element">
+            <!--Stripe.js injects the Payment Element-->
+        </div>
+    </form>
+</template>
+```
 ---
 
-### Contributing
+## Contributing
 
 Contributions are welcome, if you are thinking of adding a feature, please submit an issue first so we can determine whether it should be included.
 
 
-### Testing
+## Testing
 
-Currently we use a manual [MockClient](https://github.com/getcandy/stripe/blob/main/tests/Stripe/MockClient.php) to mock the responses the Stripe API will return. This is likely to be improved upon as tests are written, but it should be apparent what this is doing, so feel free to add your own responses.
+A [MockClient](https://github.com/getcandy/stripe/blob/main/tests/Stripe/MockClient.php) class is used to mock responses the Stripe API will return.

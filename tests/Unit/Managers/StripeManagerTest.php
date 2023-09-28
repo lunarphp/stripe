@@ -3,6 +3,9 @@
 namespace Lunar\Stripe\Tests\Unit\Managers;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Lunar\Models\Currency;
+use Lunar\Models\Price;
+use Lunar\Models\ProductVariant;
 use Lunar\Stripe\Facades\StripeFacade;
 use Lunar\Stripe\Tests\TestCase;
 use Lunar\Stripe\Tests\Utils\CartBuilder;
@@ -23,7 +26,7 @@ class StripeManagerTest extends TestCase
         StripeFacade::createIntent($cart->calculate());
 
         $this->assertEquals(
-            $cart->refresh()->meta->payment_intent,
+            $cart->refresh()->meta['payment_intent'],
             'pi_1DqH152eZvKYlo2CFHYZuxkP'
         );
     }
@@ -44,7 +47,7 @@ class StripeManagerTest extends TestCase
         StripeFacade::createIntent($cart->calculate());
 
         $this->assertEquals(
-            $cart->refresh()->meta->payment_intent,
+            $cart->refresh()->meta['payment_intent'],
             'PI_FOOBAR'
         );
     }

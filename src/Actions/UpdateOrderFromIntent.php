@@ -16,6 +16,7 @@ class UpdateOrderFromIntent
         string $failStatus = 'failed'
     ): Order {
         return DB::transaction(function () use ($order, $paymentIntent, $successStatus, $failStatus) {
+
             if ($order->placed_at) {
                 return $order;
             }
@@ -26,7 +27,10 @@ class UpdateOrderFromIntent
 
             // First try and get a successful charge, otherwise get the first (latest) one.
             $charge = $charges->first(function ($charge) use ($paymentIntent) {
-                return ! $charge->latest_charge == $charge->id;
+                if (!$paymentIntent->latest_charge) {
+                    return true;
+                }
+                return $paymentIntent->latest_charge == $charge->id;
             });
 
             $successful = (bool) !$charge->failure_code;
