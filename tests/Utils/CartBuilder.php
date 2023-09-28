@@ -33,7 +33,8 @@ class CartBuilder
 
         ShippingManifest::addOption(
             new ShippingOption(
-                description: 'Basic Delivery',
+                name: 'Basic Delivery',
+                description: 'Basic test delivery',
                 identifier: 'BASDEL',
                 price: new Price(500, $cart->currency, 1),
                 taxClass: $taxClass
@@ -50,7 +51,7 @@ class CartBuilder
             'type' => 'billing',
         ]);
 
-        ProductVariant::factory()->create()->each(function ($variant) use ($currency) {
+        $variant = ProductVariant::factory()->create()->each(function ($variant) use ($currency) {
             $variant->prices()->create([
                 'price' => 1.99,
                 'currency_id' => $currency->id,
@@ -59,6 +60,7 @@ class CartBuilder
 
         CartLine::factory()->create([
             'cart_id' => $cart->id,
+            'purchasable_id' => $variant,
         ]);
 
         return $cart;

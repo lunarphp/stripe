@@ -34,7 +34,7 @@ class StripePaymentsServiceProvider extends ServiceProvider
         });
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'lunar');
-
+        $this->loadRoutesFrom(__DIR__.'/../routes/webhooks.php');
         $this->mergeConfigFrom(__DIR__.'/../config/stripe.php', 'lunar.stripe');
 
         $this->publishes([

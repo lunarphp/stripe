@@ -25,12 +25,18 @@ class MockClient implements ClientInterface
     {
         $id = array_slice(explode('/', $absUrl), -1)[0];
 
+        $policy = config('lunar.stripe.policy');
+
         if ($method == 'get' && str_contains($absUrl, 'payment_intents')) {
             if (str_contains($absUrl, 'PI_CAPTURE')) {
                 $this->rBody = $this->getResponse('payment_intent_paid', [
                     'id' => $id,
                     'status' => 'succeeded',
+                    'capture_method' => 'automatic',
                     'payment_status' => 'succeeded',
+                    'payment_error' => null,
+                    'failure_code' => null,
+                    'captured' => true,
                 ]);
 
                 return [$this->rBody, $this->rcode, $this->rheaders];
@@ -40,7 +46,11 @@ class MockClient implements ClientInterface
                 $this->rBody = $this->getResponse('payment_intent_paid', [
                     'id' => $id,
                     'status' => 'requires_payment_method',
+                    'capture_method' => 'automatic',
                     'payment_status' => 'failed',
+                    'payment_error' => 'foo',
+                    'failure_code' => 1234,
+                    'captured' => false,
                 ]);
 
                 return [$this->rBody, $this->rcode, $this->rheaders];
