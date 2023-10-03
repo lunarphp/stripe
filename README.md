@@ -140,6 +140,8 @@ The 3 events you should listen to are `payment_intent.payment_failed`,`payment_i
 
 The path to the webhook will be `http:://yoursite.com/stripe/webhook`.
 
+You can customise the path for the webhook in `config/lunar/stripe.php`.
+
 ## Storefront Examples
 
 First we need to set up the backend API call to fetch or create the intent, this isn't Vue specific but will likely be different if you're using Livewire.
