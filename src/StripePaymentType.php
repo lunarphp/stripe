@@ -50,7 +50,9 @@ class StripePaymentType extends AbstractPayment
      */
     final public function authorize(): PaymentAuthorize
     {
-        if (! $this->order || ! $this->order = $this->cart->draftOrder) {
+        $this->order = $this->cart->draftOrder ?: $this->cart->completedOrder;
+
+        if (! $this->order) {
             try {
                 $this->order = $this->cart->createOrder();
             } catch (DisallowMultipleCartOrdersException $e) {
@@ -61,14 +63,6 @@ class StripePaymentType extends AbstractPayment
             }
         }
 
-        if ($this->order->placed_at) {
-            return new PaymentAuthorize(
-                success: false,
-                message: 'This order has already been placed',
-                orderId: $this->order->id,
-            );
-        }
-
         $this->paymentIntent = $this->stripe->paymentIntents->retrieve(
             $this->data['payment_intent']
         );
@@ -77,14 +71,6 @@ class StripePaymentType extends AbstractPayment
             return new PaymentAuthorize(
                 success: false,
                 message: 'Unable to locate payment intent',
-                orderId: $this->order->id,
-            );
-        }
-
-        if ($this->paymentIntent->status == PaymentIntent::STATUS_REQUIRES_PAYMENT_METHOD) {
-            return new PaymentAuthorize(
-                success: false,
-                message: 'A payment method is required for this intent.',
                 orderId: $this->order->id,
             );
         }

@@ -40,7 +40,7 @@ return [
         \Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE => 'awaiting-payment',
         \Stripe\PaymentIntent::STATUS_CANCELED => 'cancelled',
         \Stripe\PaymentIntent::STATUS_PROCESSING => 'processing',
-        \Stripe\PaymentIntent::STATUS_REQUIRES_ACTION => 'failed',
+        \Stripe\PaymentIntent::STATUS_REQUIRES_ACTION => 'awaiting-payment',
         \Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION => 'auth-pending',
         \Stripe\PaymentIntent::STATUS_REQUIRES_PAYMENT_METHOD => 'failed',
         \Stripe\PaymentIntent::STATUS_SUCCEEDED => 'payment-received',

@@ -2,15 +2,15 @@
 
 namespace Lunar\Stripe\Http\Middleware;
 
+use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\Middleware;
 use Lunar\Stripe\Concerns\ConstructsWebhookEvent;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
 
-class StripeWebhookMiddleware extends Middleware
+class StripeWebhookMiddleware
 {
-    public function handle(Request $request, \Closure $next)
+    public function handle(Request $request, Closure $next = null)
     {
         $secret = config('services.stripe.webhooks.payment_intent');
         $stripeSig = $request->header('Stripe-Signature');
@@ -26,7 +26,7 @@ class StripeWebhookMiddleware extends Middleware
         }
 
         if (! in_array($event->type, ['payment_intent.succeeded', 'payment_intent.payment_failed', 'payment_intent.payment_failed'])) {
-            return response(status: 200);
+            abort(200);
         }
 
         return $next($request);

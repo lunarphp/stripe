@@ -51,10 +51,10 @@ class StoreCharges
             }
 
             if (! empty($paymentDetails['last4'])) {
-                $cardType = $paymentDetails['last4'];
+                $lastFour = $paymentDetails['last4'];
             }
 
-            if (! empty($paymentDetails['checked'])) {
+            if (! empty($paymentDetails['checks'])) {
                 $meta = array_merge($meta, (array) $paymentDetails['checks']);
             }
 
