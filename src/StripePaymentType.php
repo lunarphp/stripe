@@ -2,17 +2,17 @@
 
 namespace Lunar\Stripe;
 
-use Illuminate\Support\Facades\DB;
 use Lunar\Base\DataTransferObjects\PaymentAuthorize;
 use Lunar\Base\DataTransferObjects\PaymentCapture;
 use Lunar\Base\DataTransferObjects\PaymentRefund;
+use Lunar\Exceptions\DisallowMultipleCartOrdersException;
 use Lunar\Models\Transaction;
 use Lunar\PaymentTypes\AbstractPayment;
 use Lunar\Stripe\Actions\UpdateOrderFromIntent;
 use Lunar\Stripe\Facades\StripeFacade;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
-use Lunar\Exceptions\DisallowMultipleCartOrdersException;
+use Stripe\Stripe;
 
 class StripePaymentType extends AbstractPayment
 {
@@ -25,8 +25,6 @@ class StripePaymentType extends AbstractPayment
 
     /**
      * The Payment intent.
-     *
-     * @var PaymentIntent
      */
     protected PaymentIntent $paymentIntent;
 
@@ -49,8 +47,6 @@ class StripePaymentType extends AbstractPayment
 
     /**
      * Authorize the payment for processing.
-     *
-     * @return \Lunar\Base\DataTransferObjects\PaymentAuthorize
      */
     final public function authorize(): PaymentAuthorize
     {
@@ -77,7 +73,23 @@ class StripePaymentType extends AbstractPayment
             $this->data['payment_intent']
         );
 
-        if ($this->paymentIntent->status == 'requires_capture' && $this->policy == 'automatic') {
+        if (! $this->paymentIntent) {
+            return new PaymentAuthorize(
+                success: false,
+                message: 'Unable to locate payment intent',
+                orderId: $this->order->id,
+            );
+        }
+
+        if ($this->paymentIntent->status == PaymentIntent::STATUS_REQUIRES_PAYMENT_METHOD) {
+            return new PaymentAuthorize(
+                success: false,
+                message: 'A payment method is required for this intent.',
+                orderId: $this->order->id,
+            );
+        }
+
+        if ($this->paymentIntent->status == PaymentIntent::STATUS_REQUIRES_CAPTURE && $this->policy == 'automatic') {
             $this->paymentIntent = $this->stripe->paymentIntents->capture(
                 $this->data['payment_intent']
             );
@@ -108,9 +120,7 @@ class StripePaymentType extends AbstractPayment
     /**
      * Capture a payment for a transaction.
      *
-     * @param  \Lunar\Models\Transaction  $transaction
      * @param  int  $amount
-     * @return \Lunar\Base\DataTransferObjects\PaymentCapture
      */
     public function capture(Transaction $transaction, $amount = 0): PaymentCapture
     {
@@ -161,10 +171,7 @@ class StripePaymentType extends AbstractPayment
     /**
      * Refund a captured transaction
      *
-     * @param  \Lunar\Models\Transaction  $transaction
-     * @param  int  $amount
      * @param  string|null  $notes
-     * @return \Lunar\Base\DataTransferObjects\PaymentRefund
      */
     public function refund(Transaction $transaction, int $amount = 0, $notes = null): PaymentRefund
     {

@@ -55,6 +55,13 @@ class MockClient implements ClientInterface
 
                 return [$this->rBody, $this->rcode, $this->rheaders];
             }
+
+            if (str_contains($absUrl, 'PI_REQUIRES_PAYMENT_METHOD')) {
+                $this->rBody = $this->getResponse('payment_intent_requires_payment_method');
+
+                return [$this->rBody, $this->rcode, $this->rheaders];
+            }
+
         }
 
         if ($method == 'post' && str_contains($absUrl, 'payment_intents')) {

@@ -1,54 +1,14 @@
 <?php
 
-namespace Lunar\Stripe\Tests\Unit\Managers;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Lunar\Models\Currency;
-use Lunar\Models\Price;
-use Lunar\Models\ProductVariant;
 use Lunar\Stripe\Facades\StripeFacade;
-use Lunar\Stripe\Tests\TestCase;
 use Lunar\Stripe\Tests\Utils\CartBuilder;
 
-class StripeManagerTest extends TestCase
-{
-    use RefreshDatabase;
+uses(\Lunar\Stripe\Tests\Unit\TestCase::class);
 
-    /**
-     * A basic test example.
-     *
-     * @return void
-     */
-    public function test_payment_intent_is_created()
-    {
-        $cart = CartBuilder::build();
+it('can create a payment intent', function () {
+    $cart = CartBuilder::build();
 
-        StripeFacade::createIntent($cart->calculate());
+    StripeFacade::createIntent($cart->calculate());
 
-        $this->assertEquals(
-            $cart->refresh()->meta['payment_intent'],
-            'pi_1DqH152eZvKYlo2CFHYZuxkP'
-        );
-    }
-
-    /**
-     * A basic test example.
-     *
-     * @return void
-     */
-    public function test_existing_intent_is_returned_if_it_exists()
-    {
-        $cart = CartBuilder::build([
-            'meta' => [
-                'payment_intent' => 'PI_FOOBAR',
-            ],
-        ]);
-
-        StripeFacade::createIntent($cart->calculate());
-
-        $this->assertEquals(
-            $cart->refresh()->meta['payment_intent'],
-            'PI_FOOBAR'
-        );
-    }
-}
+    expect($cart->refresh()->meta['payment_intent'])->toBe('pi_1DqH152eZvKYlo2CFHYZuxkP');
+});

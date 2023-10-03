@@ -17,12 +17,13 @@ use Stripe\ApiRequestor;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         // additional setup
         Config::set('providers.users.model', User::class);
         Config::set('services.stripe.key', 'SK_TESTER');
+        Config::set('services.stripe.webhooks.payment_intent', 'FOOBAR');
 
         activity()->disableLogging();
 

@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Log;
 use Lunar\Events\PaymentAttemptEvent;
 use Lunar\Facades\Payments;
 use Lunar\Models\Cart;
+use Lunar\Stripe\Concerns\ConstructsWebhookEvent;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
-use Stripe\Webhook;
 
 final class WebhookController extends Controller
 {
@@ -21,24 +21,24 @@ final class WebhookController extends Controller
         $stripeSig = $request->header('Stripe-Signature');
 
         try {
-            $event = Webhook::constructEvent(
-                $request->getContent(), $stripeSig, $secret
+            $event = app(ConstructsWebhookEvent::class)->constructEvent(
+                $request->getContent(),
+                $stripeSig,
+                $secret
             );
-        } catch (UnexpectedValueException | SignatureVerificationException $e) {
+        } catch (UnexpectedValueException|SignatureVerificationException $e) {
             Log::error($e->getMessage());
-            return response(status: 400);
-        }
 
-        if (!in_array($event->type, ['payment_intent.succeeded', 'payment_intent.payment_failed', 'payment_intent.payment_failed'])) {
-            return response(status: 200);
+            return response(status: 400);
         }
 
         $paymentIntent = $event->data->object->id;
 
         $cart = Cart::where('meta->payment_intent', '=', $paymentIntent)->first();
 
-        if (!$cart) {
+        if (! $cart) {
             Log::error("Unable to find cart with intent ${paymentIntent}");
+
             return response(status: 400);
         }
 

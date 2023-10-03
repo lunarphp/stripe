@@ -30,7 +30,6 @@ class StripeManager
     /**
      * Create a payment intent from a Cart
      *
-     * @param  Cart  $cart
      * @return \Stripe\PaymentIntent
      */
     public function createIntent(Cart $cart)

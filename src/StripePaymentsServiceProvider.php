@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Lunar\Facades\Payments;
+use Lunar\Stripe\Actions\ConstructWebhookEvent;
 use Lunar\Stripe\Components\PaymentForm;
+use Lunar\Stripe\Concerns\ConstructsWebhookEvent;
 use Lunar\Stripe\Managers\StripeManager;
 
 class StripePaymentsServiceProvider extends ServiceProvider
@@ -23,12 +25,16 @@ class StripePaymentsServiceProvider extends ServiceProvider
             return $app->make(StripePaymentType::class);
         });
 
+        $this->app->bind(ConstructsWebhookEvent::class, function ($app) {
+            return $app->make(ConstructWebhookEvent::class);
+        });
+
         $this->app->singleton('gc:stripe', function ($app) {
             return $app->make(StripeManager::class);
         });
 
         Blade::directive('stripeScripts', function () {
-            return  <<<'EOT'
+            return <<<'EOT'
                 <script src="https://js.stripe.com/v3/"></script>
             EOT;
         });
@@ -45,7 +51,9 @@ class StripePaymentsServiceProvider extends ServiceProvider
             __DIR__.'/../resources/views' => resource_path('views/vendor/lunar'),
         ], 'lunar.stripe.components');
 
-        // Register the stripe payment component.
-        Livewire::component('stripe.payment', PaymentForm::class);
+        if (class_exists(Livewire::class)) {
+            // Register the stripe payment component.
+            Livewire::component('stripe.payment', PaymentForm::class);
+        }
     }
 }

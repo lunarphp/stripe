@@ -1,77 +1,108 @@
 <?php
 
-namespace Lunar\Stripe\Tests\Unit;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Lunar\Base\DataTransferObjects\PaymentAuthorize;
 use Lunar\Models\Transaction;
 use Lunar\Stripe\Facades\StripeFacade;
 use Lunar\Stripe\StripePaymentType;
-use Lunar\Stripe\Tests\TestCase;
 use Lunar\Stripe\Tests\Utils\CartBuilder;
 
-/**
- * @group stripe.payments
- */
-class StripePaymentTypeTest extends TestCase
-{
-    use RefreshDatabase;
+uses(\Lunar\Stripe\Tests\Unit\TestCase::class);
 
-    public function test_an_order_is_captured()
-    {
-        $cart = CartBuilder::build();
+it('can capture an order', function () {
+    $cart = CartBuilder::build();
+    $payment = new StripePaymentType;
 
-        $payment = new StripePaymentType;
+    $response = $payment->cart($cart)->withData([
+        'payment_intent' => 'PI_CAPTURE',
+    ])->authorize();
 
-        $response = $payment->cart($cart)->withData([
-            'payment_intent' => 'PI_CAPTURE',
-        ])->authorize();
+    expect($response)->toBeInstanceOf(PaymentAuthorize::class);
+    expect($response->success)->toBeTrue();
+    expect($cart->refresh()->completedOrder->placed_at)->not()->toBeNull();
+    expect($cart->meta['payment_intent'])->toEqual('PI_CAPTURE');
 
-        $this->assertInstanceOf(PaymentAuthorize::class, $response);
-        $this->assertTrue($response->success);
-        $this->assertNotNull($cart->refresh()->completedOrder->placed_at);
+    $this->assertDatabaseHas((new Transaction)->getTable(), [
+        'order_id' => $cart->refresh()->completedOrder->id,
+        'type' => 'capture',
+    ]);
+});
 
-        $this->assertEquals('PI_CAPTURE', $cart->meta['payment_intent']);
+it('can handle failed payments', function () {
+    $cart = CartBuilder::build();
 
-        $this->assertDatabaseHas((new Transaction)->getTable(), [
-            'order_id' => $cart->refresh()->completedOrder->id,
-            'type' => 'capture',
-        ]);
-    }
+    $payment = new StripePaymentType;
 
-    public function test_handle_failed_payment()
-    {
-        $cart = CartBuilder::build();
+    $response = $payment->cart($cart)->withData([
+        'payment_intent' => 'PI_FAIL',
+    ])->authorize();
 
-        $payment = new StripePaymentType;
+    expect($response)->toBeInstanceOf(PaymentAuthorize::class);
+    expect($response->success)->toBeFalse();
+    expect($cart->refresh()->completedOrder)->toBeNull();
+    expect($cart->refresh()->draftOrder)->not()->toBeNull();
 
-        $response = $payment->cart($cart)->withData([
-            'payment_intent' => 'PI_FAIL',
-        ])->authorize();
+    $this->assertDatabaseMissing((new Transaction)->getTable(), [
+        'order_id' => $cart->refresh()->draftOrder->id,
+        'type' => 'capture',
+    ]);
+});
 
-        $this->assertInstanceOf(PaymentAuthorize::class, $response);
-        $this->assertFalse($response->success);
-        $this->assertNull($cart->refresh()->draftOrder->placed_at);
+it('can retrieve existing payment intent', function () {
+    $cart = CartBuilder::build([
+        'meta' => [
+            'payment_intent' => 'PI_FOOBAR',
+        ],
+    ]);
 
-        $this->assertDatabaseMissing((new Transaction)->getTable(), [
-            'order_id' => $cart->refresh()->draftOrder->id,
-            'type' => 'capture',
-        ]);
-    }
+    StripeFacade::createIntent($cart->calculate());
 
-    public function test_existing_intent_is_returned_if_it_exists()
-    {
-        $cart = CartBuilder::build([
-            'meta' => [
-                'payment_intent' => 'PI_FOOBAR',
-            ],
-        ]);
+    expect($cart->refresh()->meta['payment_intent'])->toBe('PI_FOOBAR');
+});
 
-        StripeFacade::createIntent($cart->calculate());
+it('will fail if cart already has an order', function () {
+    $cart = CartBuilder::build();
+    $order = $cart->createOrder();
+    $order->update([
+        'placed_at' => now(),
+    ]);
 
-        $this->assertEquals(
-            $cart->refresh()->meta['payment_intent'],
-            'PI_FOOBAR'
-        );
-    }
-}
+    $payment = new StripePaymentType;
+
+    $response = $payment->cart($cart)->withData([
+        'payment_intent' => 'PI_CAPTURE',
+    ])->authorize();
+
+    expect($response)->toBeInstanceOf(PaymentAuthorize::class);
+    expect($response->success)->toBeFalse();
+    expect($response->message)->toBe('Carts can only have one order associated to them.');
+});
+
+it('will fail if payment intent status is requires_payment_method', function () {
+    $cart = CartBuilder::build();
+
+    $payment = new StripePaymentType;
+
+    $response = $payment->cart($cart)->withData([
+        'payment_intent' => 'PI_REQUIRES_PAYMENT_METHOD',
+    ])->authorize();
+
+    expect($response)->toBeInstanceOf(PaymentAuthorize::class);
+    expect($response->success)->toBeFalse();
+
+    expect($cart->refresh()->completedOrder)->toBeNull();
+});
+
+it('create a pending transaction when status is requires_action', function () {
+    $cart = CartBuilder::build();
+
+    $payment = new StripePaymentType;
+
+    $response = $payment->cart($cart)->withData([
+        'payment_intent' => 'PI_REQUIRES_ACTION',
+    ])->authorize();
+
+    expect($response)->toBeInstanceOf(PaymentAuthorize::class);
+    expect($response->success)->toBeFalse();
+
+    expect($cart->refresh()->completedOrder)->toBeNull();
+});
