@@ -124,7 +124,7 @@ Stripe::fetchIntent($paymentIntentId);
 
 ### Syncing an existing intent
 
-If a payment intent has been created and there are changes to the cart, you will want to update the intent to it has the correct totals.
+If a payment intent has been created and there are changes to the cart, you will want to update the intent so it has the correct totals.
 
 ```php
 use \Lunar\Stripe\Facades\Stripe;
