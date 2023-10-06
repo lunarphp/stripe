@@ -71,6 +71,27 @@ class StripeManager
     }
 
     /**
+     * @param Cart $cart
+     * @return void
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function syncIntent(Cart $cart)
+    {
+        $meta = (array) $cart->meta;
+
+        if (empty($meta['payment_intent'])) {
+            return;
+        }
+
+        $cart = $cart->calculate();
+
+        $this->getClient()->paymentIntents->update(
+            $meta['payment_intent'],
+            ['amount' => $cart->total->value]
+        );
+    }
+
+    /**
      * Fetch an intent from the Stripe API.
      *
      * @param  string  $intentId
