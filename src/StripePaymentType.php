@@ -63,8 +63,10 @@ class StripePaymentType extends AbstractPayment
             }
         }
 
+        $paymentIntentId = $this->data['payment_intent'];
+
         $this->paymentIntent = $this->stripe->paymentIntents->retrieve(
-            $this->data['payment_intent']
+            $paymentIntentId
         );
 
         if (! $this->paymentIntent) {
@@ -94,7 +96,10 @@ class StripePaymentType extends AbstractPayment
             }
         }
 
-        $order = (new UpdateOrderFromIntent)->execute($this->order, $this->paymentIntent);
+        $order = (new UpdateOrderFromIntent)->execute(
+            $this->order,
+            $this->paymentIntent
+        );
 
         return new PaymentAuthorize(
             success: (bool) $order->placed_at,

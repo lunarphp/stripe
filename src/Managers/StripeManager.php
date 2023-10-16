@@ -2,7 +2,9 @@
 
 namespace Lunar\Stripe\Managers;
 
+use Illuminate\Support\Collection;
 use Lunar\Models\Cart;
+use Stripe\Charge;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
@@ -17,10 +19,8 @@ class StripeManager
 
     /**
      * Return the Stripe client
-     *
-     * @return void
      */
-    public function getClient()
+    public function getClient(): StripeClient
     {
         return new StripeClient(
             config('services.stripe.key')
@@ -100,6 +100,21 @@ class StripeManager
         }
 
         return $intent;
+    }
+
+    public function getCharges(string $paymentIntentId): Collection
+    {
+        try {
+            return collect(
+                $this->getClient()->charges->all([
+                    'payment_intent' => $paymentIntentId,
+                ])['data'] ?? null
+            );
+        } catch (\Exception $e) {
+            //
+        }
+
+        return collect();
     }
 
     /**

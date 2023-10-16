@@ -25,8 +25,17 @@ class StripeWebhookMiddleware
             abort(400, $e->getMessage());
         }
 
-        if (! in_array($event->type, ['payment_intent.succeeded', 'payment_intent.payment_failed', 'payment_intent.payment_failed'])) {
-            abort(200);
+        if (! in_array(
+            $event->type,
+            [
+                'payment_intent.canceled',
+                'payment_intent.created',
+                'payment_intent.payment_failed',
+                'payment_intent.processing',
+                'payment_intent.succeeded',
+            ]
+        )) {
+            return response('', 200);
         }
 
         return $next($request);

@@ -142,6 +142,22 @@ The path to the webhook will be `http:://yoursite.com/stripe/webhook`.
 
 You can customise the path for the webhook in `config/lunar/stripe.php`.
 
+You will also need to add the webhook signing secret to the `services.php` config file:
+
+```php
+<?php
+
+return [
+    // ...
+    'stripe' => [
+        // ...
+        'webhooks' => [
+            'payment_intent' => '...'
+        ],
+    ],
+];
+```
+
 ## Storefront Examples
 
 First we need to set up the backend API call to fetch or create the intent, this isn't Vue specific but will likely be different if you're using Livewire.
