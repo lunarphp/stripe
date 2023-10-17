@@ -2,7 +2,9 @@
 
 namespace Lunar\Stripe\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +17,7 @@ use Stripe\Exception\UnexpectedValueException;
 
 final class WebhookController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request): JsonResponse
     {
         $secret = config('services.stripe.webhooks.payment_intent');
         $stripeSig = $request->header('Stripe-Signature');
@@ -27,9 +29,13 @@ final class WebhookController extends Controller
                 $secret
             );
         } catch (UnexpectedValueException|SignatureVerificationException $e) {
-            Log::error($e->getMessage());
-
-            return response(status: 400);
+            Log::error(
+                $error = $e->getMessage()
+            );
+            return response(status: 400)->json([
+                'webhook_successful' => false,
+                'message' => $error,
+            ]);
         }
 
         $paymentIntent = $event->data->object->id;
@@ -37,9 +43,14 @@ final class WebhookController extends Controller
         $cart = Cart::where('meta->payment_intent', '=', $paymentIntent)->first();
 
         if (! $cart) {
-            Log::error("Unable to find cart with intent ${paymentIntent}");
+            Log::error(
+                $error = "Unable to find cart with intent ${paymentIntent}"
+            );
 
-            return response(status: 400);
+            return response(status: 400)->json([
+                'webhook_successful' => false,
+                'message' => $error,
+            ]);
         }
 
         $payment = Payments::driver('stripe')->cart($cart->calculate())->withData([
@@ -48,6 +59,9 @@ final class WebhookController extends Controller
 
         PaymentAttemptEvent::dispatch($payment);
 
-        return response(status: 200);
+        return response()->json([
+            'webhook_successful' => true,
+            'message' => 'Webook handled successfully',
+        ]);
     }
 }
