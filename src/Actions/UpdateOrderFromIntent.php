@@ -20,6 +20,7 @@ class UpdateOrderFromIntent
             $charges = StripeFacade::getCharges($paymentIntent->id);
 
             $order = app(StoreCharges::class)->store($order, $charges);
+            $requiresCapture = $paymentIntent->status === PaymentIntent::STATUS_REQUIRES_CAPTURE;
 
             $statuses = config('lunar.stripe.status_mapping', []);
 
@@ -29,7 +30,7 @@ class UpdateOrderFromIntent
                 $placedAt = now();
             }
 
-            if ($charges->isEmpty()) {
+            if ($charges->isEmpty() && !$requiresCapture) {
                 return $order;
             }
 

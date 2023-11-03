@@ -117,6 +117,11 @@ class StripeManager
         return collect();
     }
 
+    public function getCharge($chargeId)
+    {
+        return $this->getClient()->charges->retrieve($chargeId);
+    }
+
     /**
      * Build the intent
      *

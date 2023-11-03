@@ -37,7 +37,7 @@ return [
     | Reference: https://stripe.com/docs/api/charges/object
     */
     'status_mapping' => [
-        \Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE => 'awaiting-payment',
+        \Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE => 'requires-capture',
         \Stripe\PaymentIntent::STATUS_CANCELED => 'cancelled',
         \Stripe\PaymentIntent::STATUS_PROCESSING => 'processing',
         \Stripe\PaymentIntent::STATUS_REQUIRES_ACTION => 'awaiting-payment',

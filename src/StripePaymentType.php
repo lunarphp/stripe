@@ -121,9 +121,13 @@ class StripePaymentType extends AbstractPayment
             $payload['amount_to_capture'] = $amount;
         }
 
+        $charge = StripeFacade::getCharge($transaction->reference);
+
+        $paymentIntent = StripeFacade::fetchIntent($charge->payment_intent);
+
         try {
             $response = $this->stripe->paymentIntents->capture(
-                $transaction->reference,
+                $paymentIntent->id,
                 $payload
             );
         } catch (InvalidRequestException $e) {
@@ -133,28 +137,7 @@ class StripePaymentType extends AbstractPayment
             );
         }
 
-        $charges = $response->charges->data;
-
-        $transactions = [];
-
-        foreach ($charges as $charge) {
-            $card = $charge->payment_method_details->card;
-            $transactions[] = [
-                'parent_transaction_id' => $transaction->id,
-                'success' => $charge->status != 'failed',
-                'type' => 'capture',
-                'driver' => 'stripe',
-                'amount' => $charge->amount_captured,
-                'reference' => $response->id,
-                'status' => $charge->status,
-                'notes' => $charge->failure_message,
-                'card_type' => $card->brand,
-                'last_four' => $card->last4,
-                'captured_at' => $charge->amount_captured ? now() : null,
-            ];
-        }
-
-        $transaction->order->transactions()->createMany($transactions);
+        UpdateOrderFromIntent::execute($transaction->order, $paymentIntent);
 
         return new PaymentCapture(success: true);
     }
@@ -166,9 +149,11 @@ class StripePaymentType extends AbstractPayment
      */
     public function refund(Transaction $transaction, int $amount = 0, $notes = null): PaymentRefund
     {
+        $charge = StripeFacade::getCharge($transaction->reference);
+
         try {
             $refund = $this->stripe->refunds->create(
-                ['payment_intent' => $transaction->reference, 'amount' => $amount]
+                ['payment_intent' => $charge->payment_intent, 'amount' => $amount]
             );
         } catch (InvalidRequestException $e) {
             return new PaymentRefund(
