@@ -30,7 +30,7 @@ class UpdateOrderFromIntent
                 $placedAt = now();
             }
 
-            if ($charges->isEmpty() && !$requiresCapture) {
+            if ($charges->isEmpty() && ! $requiresCapture) {
                 return $order;
             }
 
