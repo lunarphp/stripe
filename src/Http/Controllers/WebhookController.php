@@ -4,8 +4,6 @@ namespace Lunar\Stripe\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Lunar\Events\PaymentAttemptEvent;
@@ -32,6 +30,7 @@ final class WebhookController extends Controller
             Log::error(
                 $error = $e->getMessage()
             );
+
             return response(status: 400)->json([
                 'webhook_successful' => false,
                 'message' => $error,
@@ -44,7 +43,7 @@ final class WebhookController extends Controller
 
         if (! $cart) {
             Log::error(
-                $error = "Unable to find cart with intent ${paymentIntent}"
+                $error = "Unable to find cart with intent {$paymentIntent}"
             );
 
             return response(status: 400)->json([
