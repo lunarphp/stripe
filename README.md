@@ -21,7 +21,7 @@ This addon is currently in Alpha, whilst every step is taken to ensure this is w
 
 ## Minimum Requirements
 
-- Lunar >= `0.6`
+- Lunar  `1.x`
 - A [Stripe](http://stripe.com/) account with secret and public keys
 
 ## Optional Requirements
@@ -208,7 +208,7 @@ const buildForm = async () => {
         layout: "tabs",
         defaultValues: {
             billingDetails: {
-                name: `${billingAddress.value.first_name} ${billingAddress.value?.last_name}`,
+                name: `{$billingAddress.value.first_name} {$billingAddress.value?.last_name}`,
                 phone: billingAddress.value?.contact_phone,
             },
         },
@@ -237,7 +237,7 @@ const submit = async () => {
                 return_url: 'http://yoursite.com/checkout/complete',
                 payment_method_data: {
                     billing_details: {
-                        name: `${address.first_name} ${address.last_name}`,
+                        name: `{$address.first_name} {$address.last_name}`,
                         email: address.contact_email,
                         phone: address.contact_phone,
                         address: {

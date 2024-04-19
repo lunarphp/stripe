@@ -4,7 +4,6 @@ namespace Lunar\Stripe\Managers;
 
 use Illuminate\Support\Collection;
 use Lunar\Models\Cart;
-use Stripe\Charge;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
