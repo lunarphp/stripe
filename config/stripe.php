@@ -1,7 +1,6 @@
 <?php
 
 use Lunar\Stripe\Actions\StoreCharges;
-use Stripe\PaymentIntent;
 
 return [
     /*
@@ -53,27 +52,6 @@ return [
     |
     */
     'allow_partial_payment' => false,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Status mapping
-    |--------------------------------------------------------------------------
-    |
-    | When a payment intent is retrieved from Stripe it will have a status which is
-    | unique to Stripe and potentially not what you have in Lunar. Here you can define
-    | what each Stripe status should be in Lunar.
-    |
-    | Reference: https://stripe.com/docs/api/charges/object
-    */
-    'status_mapping' => [
-        PaymentIntent::STATUS_REQUIRES_CAPTURE => 'requires-capture',
-        PaymentIntent::STATUS_CANCELED => 'cancelled',
-        PaymentIntent::STATUS_PROCESSING => 'processing',
-        PaymentIntent::STATUS_REQUIRES_ACTION => 'awaiting-payment',
-        PaymentIntent::STATUS_REQUIRES_CONFIRMATION => 'auth-pending',
-        PaymentIntent::STATUS_REQUIRES_PAYMENT_METHOD => 'failed',
-        PaymentIntent::STATUS_SUCCEEDED => 'payment-received',
-    ],
 
     'actions' => [
         /*

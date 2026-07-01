@@ -4,11 +4,11 @@ namespace Lunar\Stripe\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Lunar\Base\BaseModel;
-use Lunar\Models\Cart;
+use Lunar\Core\Models\Base;
+use Lunar\Core\Models\Cart;
 use Stripe\PaymentIntent;
 
-class StripePaymentIntent extends BaseModel
+class StripePaymentIntent extends Base
 {
     const FINAL_STATES = [PaymentIntent::STATUS_CANCELED, PaymentIntent::STATUS_SUCCEEDED];
 
@@ -19,7 +19,7 @@ class StripePaymentIntent extends BaseModel
 
     public function cart(): BelongsTo
     {
-        return $this->belongsTo(Cart::modelClass(), 'cart_id');
+        return $this->belongsTo(Cart::class, 'cart_id');
     }
 
     public function scopeActive(Builder $query): Builder

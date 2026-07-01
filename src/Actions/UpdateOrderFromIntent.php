@@ -3,26 +3,22 @@
 namespace Lunar\Stripe\Actions;
 
 use Illuminate\Support\Facades\DB;
-use Lunar\Models\Contracts\Order as OrderContract;
+use Lunar\Core\Models\Order;
 use Lunar\Stripe\Facades\Stripe;
 use Stripe\PaymentIntent;
 
 class UpdateOrderFromIntent
 {
-    final public static function execute(
-        OrderContract $order,
-        PaymentIntent $paymentIntent,
-        string $successStatus = 'paid',
-        string $failStatus = 'failed'
-    ): OrderContract {
+    public static function execute(
+        Order $order,
+        PaymentIntent $paymentIntent
+    ): Order {
         return DB::transaction(function () use ($order, $paymentIntent) {
 
             $charges = Stripe::getCharges($paymentIntent->id);
 
             $order = app(StoreCharges::class)->store($order, $charges);
             $requiresCapture = $paymentIntent->status === PaymentIntent::STATUS_REQUIRES_CAPTURE;
-
-            $statuses = config('lunar.stripe.status_mapping', []);
 
             $placedAt = null;
 
@@ -39,7 +35,6 @@ class UpdateOrderFromIntent
             }
 
             $order->update([
-                'status' => $statuses[$paymentIntent->status] ?? $paymentIntent->status,
                 'placed_at' => $order->placed_at ?: $placedAt,
             ]);
 

@@ -2,17 +2,16 @@
 
 namespace Lunar\Stripe;
 
-use Lunar\Base\DataTransferObjects\PaymentAuthorize;
-use Lunar\Base\DataTransferObjects\PaymentCapture;
-use Lunar\Base\DataTransferObjects\PaymentCheck;
-use Lunar\Base\DataTransferObjects\PaymentChecks;
-use Lunar\Base\DataTransferObjects\PaymentRefund;
-use Lunar\Events\PaymentAttemptEvent;
-use Lunar\Exceptions\Carts\CartException;
-use Lunar\Exceptions\DisallowMultipleCartOrdersException;
-use Lunar\Models\Contracts\Transaction as TransactionContract;
-use Lunar\Models\Transaction;
-use Lunar\PaymentTypes\AbstractPayment;
+use Lunar\Core\DataObjects\PaymentAuthorize;
+use Lunar\Core\DataObjects\PaymentCapture;
+use Lunar\Core\DataObjects\PaymentCheck;
+use Lunar\Core\DataObjects\PaymentChecks;
+use Lunar\Core\DataObjects\PaymentRefund;
+use Lunar\Core\Events\PaymentAttemptEvent;
+use Lunar\Core\Exceptions\Carts\CartException;
+use Lunar\Core\Exceptions\DisallowMultipleCartOrdersException;
+use Lunar\Core\Models\Transaction;
+use Lunar\Core\PaymentTypes\AbstractPayment;
 use Lunar\Stripe\Actions\UpdateOrderFromIntent;
 use Lunar\Stripe\Events\OrphanedPaymentIntentDetected;
 use Lunar\Stripe\Facades\Stripe;
@@ -56,7 +55,7 @@ class StripePaymentType extends AbstractPayment
     /**
      * Authorize the payment for processing.
      */
-    final public function authorize(): ?PaymentAuthorize
+    public function authorize(): ?PaymentAuthorize
     {
         $paymentIntentId = $this->data['payment_intent'];
 
@@ -195,7 +194,7 @@ class StripePaymentType extends AbstractPayment
         }
 
         if ($this->order) {
-            $expectedAmount = $this->order->total->value;
+            $expectedAmount = $this->order->total;
             $expectedCurrency = $this->order->currency_code;
         } else {
             $calculated = $this->cart->calculate();
@@ -227,7 +226,7 @@ class StripePaymentType extends AbstractPayment
      *
      * @param  int  $amount
      */
-    public function capture(TransactionContract $transaction, $amount = 0): PaymentCapture
+    public function capture(Transaction $transaction, $amount = 0): PaymentCapture
     {
         /** @var Transaction $transaction */
         $payload = [];
@@ -262,7 +261,7 @@ class StripePaymentType extends AbstractPayment
      *
      * @param  string|null  $notes
      */
-    public function refund(TransactionContract $transaction, int $amount = 0, $notes = null): PaymentRefund
+    public function refund(Transaction $transaction, int $amount = 0, $notes = null): PaymentRefund
     {
         /** @var Transaction $transaction */
         $charge = Stripe::getCharge($transaction->reference);
@@ -295,7 +294,7 @@ class StripePaymentType extends AbstractPayment
         );
     }
 
-    public function getPaymentChecks(TransactionContract $transaction): PaymentChecks
+    public function getPaymentChecks(Transaction $transaction): PaymentChecks
     {
         /** @var Transaction $transaction */
         $meta = $transaction->meta;
