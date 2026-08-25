@@ -3,7 +3,6 @@
 namespace Lunar\Stripe\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Lunar\Stripe\Managers\StripeManager;
 use Lunar\Stripe\MockClient;
 use Stripe\ApiRequestor;
 
@@ -22,7 +21,7 @@ use Stripe\ApiRequestor;
  * @method static \Illuminate\Support\Collection getCharges(string $paymentIntentId)
  * @method static \Stripe\Charge getCharge(string $chargeId)
  *
- * @see StripeManager
+ * @see \Lunar\Stripe\Managers\StripeManager
  */
 class Stripe extends Facade
 {
@@ -34,13 +33,9 @@ class Stripe extends Facade
         return 'lunar:stripe';
     }
 
-    public static function fake(array $data = []): MockClient
+    public static function fake(): void
     {
         $mockClient = new MockClient;
-        $mockClient->next($data);
-
         ApiRequestor::setHttpClient($mockClient);
-
-        return $mockClient;
     }
 }
